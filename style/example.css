@@ -97,6 +97,23 @@ QLabel#editorHeader {
 
 /* [TITULO DE SECAO] Ex: "[ mob ]", "[ client ]" nos parametros
    default: fundo #2c2929, texto #ffff55 */
+/* Botao de secao recolhivel (ex: "[ mob ]" clicavel) */
+QPushButton#sectionToggle {
+    text-align: left;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 13px;
+    background-color: #2c2929;
+    color: #ffff55;
+    border: 2px solid #141414;
+    border-radius: 0px;
+}
+QPushButton#sectionToggle:hover {
+    background-color: #3a3535;
+}
+
+
+/* [TITULO DE SECAO] Estatico (mantido para compatibilidade) */
 QLabel#sectionHeader {
     color: #ffff55;
     font-size: 14px;

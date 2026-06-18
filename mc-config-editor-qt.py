@@ -734,10 +734,7 @@ class EditorPanel(QWidget):
         for key, value in d.items():
             key_path = prefix + [key]
             if isinstance(value, dict):
-                header = QLabel(f"  ▸ {key}")
-                header.setObjectName("sectionHeader")
-                self._scroll_layout.addWidget(header)
-                self._render_dict(cf, value, key_path)
+                self._add_collapsible_section(key, cf, value, key_path)
             elif isinstance(value, list):
                 pw = ParameterWidget(key, value, key_path, self._on_param_change,
                                      self._delete_param, self)
@@ -748,6 +745,41 @@ class EditorPanel(QWidget):
                                      self._delete_param, self)
                 self._scroll_layout.addWidget(pw)
                 self._param_widgets.append(pw)
+
+    def _add_collapsible_section(self, name: str, cf, nested_dict: dict,
+                                  key_path: List[str]) -> None:
+        container = QWidget()
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setSpacing(2)
+
+        btn = QPushButton(f"  ▼ {name}")
+        btn.setObjectName("sectionToggle")
+        container_layout.addWidget(btn)
+
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(20, 2, 0, 2)
+        content_layout.setSpacing(2)
+
+        old_layout = self._scroll_layout
+        self._scroll_layout = content_layout
+        self._render_dict(cf, nested_dict, key_path)
+        self._scroll_layout = old_layout
+
+        btn.clicked.connect(lambda: self._toggle_section(btn, content))
+        container_layout.addWidget(content)
+        self._scroll_layout.addWidget(container)
+
+    @staticmethod
+    def _toggle_section(btn: QPushButton, content: QWidget) -> None:
+        visible = content.isVisible()
+        content.setVisible(not visible)
+        text = btn.text()
+        if visible:
+            btn.setText(text.replace("▼", "▶"))
+        else:
+            btn.setText(text.replace("▶", "▼"))
 
     def _delete_param(self, key_path: List[str]) -> None:
         if not self.current_file or not self.current_file.is_structured:

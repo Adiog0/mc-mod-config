@@ -83,6 +83,22 @@ QLabel#sectionHeader {
     border: 2px solid #141414;
 }
 
+/* Botao de secao recolhivel (ex: "[ mob ]" clicavel) */
+QPushButton#sectionToggle {
+    text-align: left;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 13px;
+    background-color: #2c2929;
+    color: #ffff55;
+    border: 2px solid #141414;
+    border-radius: 0px;
+}
+QPushButton#sectionToggle:hover {
+    background-color: #3a3535;
+}
+
+
 /* Placeholder central (antes de selecionar arquivo) */
 QLabel#editorPlaceholder {
     color: #5a5a5a;
