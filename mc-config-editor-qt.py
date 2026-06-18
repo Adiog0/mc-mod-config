@@ -994,6 +994,15 @@ class MainWindow(QMainWindow):
         editor_layout = QVBoxLayout(editor_container)
         editor_layout.setContentsMargins(0, 0, 0, 0)
 
+        # Instance info bar
+        self.instance_label = QLabel("")
+        self.instance_label.setObjectName("sectionHeader")
+        self.instance_label.setStyleSheet(
+            "padding: 6px 10px; background-color: #1c1a1a; font-size: 13px; color: #ffff55;"
+        )
+        self.instance_label.setVisible(False)
+        editor_layout.addWidget(self.instance_label)
+
         self.editor_header = QLabel("")
         self.editor_header.setObjectName("windowTitle")
         self.editor_header.setStyleSheet("padding: 6px 10px; background-color: #1c1a1a;")
@@ -1093,6 +1102,30 @@ class MainWindow(QMainWindow):
             return
 
         self._instance_path = str(config_dir)
+        self._current_file = None
+
+        # Deriva nome da instancia
+        if config_dir.parent.name == "minecraft":
+            inst_name = config_dir.parent.parent.name
+        else:
+            inst_name = config_dir.parent.name
+
+        # Limpa editor da instancia anterior
+        self.editor._clear_widgets()
+        self.editor._raw_editor.setVisible(False)
+        self.editor._scroll.setVisible(False)
+        self.editor._placeholder.setText("🔨 Selecione um arquivo de configuracao na arvore ao lado")
+        self.editor._placeholder.setVisible(True)
+        self.editor_header.setVisible(False)
+
+        # Mostra label da instancia atual
+        self.instance_label.setText(f"🏰 Você está editando: {inst_name}")
+        self.instance_label.setVisible(True)
+
+        # Desabilita botoes
+        self.btn_backup.setEnabled(False)
+        self.btn_save.setEnabled(False)
+        self.btn_cancel.setEnabled(False)
 
         try:
             scanner = ConfigScanner(config_dir)
@@ -1103,7 +1136,7 @@ class MainWindow(QMainWindow):
 
         self._populate_tree()
         total = sum(len(g.files) for g in self._groups)
-        self.setWindowTitle(f"⛏ Minecraft Mod Config Editor — {config_dir.parent.name if config_dir.parent else '???'}")
+        self.setWindowTitle(f"⛏ Minecraft Mod Config Editor — {inst_name}")
         self.status.showMessage(f"✅ {len(self._groups)} mods, {total} arquivos carregados")
 
         if save:
