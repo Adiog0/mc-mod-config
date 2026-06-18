@@ -106,14 +106,14 @@ QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
 
 QSpinBox::up-button, QSpinBox::down-button,
 QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-    background-color: #383433;
+    background-color: #4a4543;
     border: none;
-    border-radius: 2px;
-    width: 18px;
+    border-radius: 3px;
+    width: 22px;
 }
 QSpinBox::up-button:hover, QSpinBox::down-button:hover,
 QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
-    background-color: #4a4543;
+    background-color: #5c5654;
 }
 
 
