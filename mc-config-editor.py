@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mc-config-editor.py — Minecraft Mod Config Editor (entry point)
+mc-config-editor.py — Minecraft Mod Config Editor — by Makalove
 
 Wrapper multiplataforma com validacao de dependencias.
 Se faltar PyQt6, yaml, tomlkit ou pyjson5, pergunta ao usuario

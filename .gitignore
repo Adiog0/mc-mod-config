@@ -1,8 +1,8 @@
-# Logs
+# Logs — nunca subir
 logs/
 *.log
 
-# Python
+# Python artifacts
 __pycache__/
 *.py[cod]
 *.pyo
@@ -16,20 +16,25 @@ venv/
 .venv/
 env/
 
-# IDE
+# IDE & Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS generated
 .DS_Store
 Thumbs.db
 
-# App-specific
+# App-specific — nunca subir
 *.bak
 *.backup
 
-# User settings (sensitive/local)
-~/.config/mc-config-editor/settings.json
+# Configuracoes do usuario (locais, privadas)
+settings.json
+style/custom.css
+
+# Dados de teste
+*_test_*
+*.test_*

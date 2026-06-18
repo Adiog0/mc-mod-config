@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-mc-config-editor-qt.py — Minecraft Mod Config Editor (PyQt6)
+mc-config-editor-qt.py — Minecraft Mod Config Editor — by Makalove
 
-GUI em PyQt6 com tema Minecraft via QSS.
+GUI em PyQt6 com tema customizavel via CSS/QSS.
 Multiplataforma: Windows, Linux, macOS.
 Salva automaticamente a ultima instancia usada.
 Suporta CSS customizado pelo usuario.
@@ -921,7 +921,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, config_dir: Optional[str] = None):
         super().__init__()
-        self.setWindowTitle("Minecraft Mod Config Editor")
+        self.setWindowTitle("Minecraft Mod Config Editor — by Makalove")
         self.setMinimumSize(1000, 650)
         self.resize(1300, 800)
         app_icon = load_icon("pickaxe")
@@ -1185,7 +1185,7 @@ class MainWindow(QMainWindow):
 
         self._populate_tree()
         total = sum(len(g.files) for g in self._groups)
-        self.setWindowTitle(f"Minecraft Mod Config Editor — {inst_name}")
+        self.setWindowTitle(f"Minecraft Mod Config Editor — {inst_name} — by Makalove")
         self.status.showMessage(f"{icon_text('check')} {len(self._groups)} mods, {total} arquivos carregados")
 
         if save:
@@ -1296,11 +1296,13 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "Sobre — Minecraft Mod Config Editor",
-            "Minecraft Mod Config Editor\n\n"
+            "Minecraft Mod Config Editor — by Makalove\n\n"
             "Edita arquivos de configuracao de mods Minecraft\n"
             "(TOML, JSON, JSON5, YAML e formatos raw).\n\n"
             "Multiplataforma: Windows, Linux, macOS\n"
-            "Suporta CSS customizado via QSS."
+            "Temas customizaveis via CSS (QSS)\n"
+            "Icones PNG com fallback para emoji\n\n"
+            "github.com/makalove/mc-mod-config"
         )
 
     def closeEvent(self, event) -> None:
