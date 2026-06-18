@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from PyQt6.QtCore import Qt, QSettings, QSize, QTimer
 from PyQt6.QtGui import QAction, QFont, QIcon, QPixmap
 from PyQt6.QtWidgets import (
-    QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
+    QAbstractSpinBox, QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
     QMessageBox, QPushButton, QScrollArea, QSizePolicy,
     QSpinBox, QSplitter, QStatusBar, QTextEdit, QTreeWidget,
@@ -562,6 +562,7 @@ class ParameterWidget(QWidget):
             self._widget = QSpinBox()
             self._widget.setRange(-2147483648, 2147483647)
             self._widget.setValue(int(value))
+            self._widget.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.PlusMinus)
             self._widget.setFixedWidth(180)
             self._widget.valueChanged.connect(self._emit_change)
             layout.addWidget(self._widget)
@@ -571,6 +572,7 @@ class ParameterWidget(QWidget):
             self._widget.setRange(-1e12, 1e12)
             self._widget.setDecimals(4)
             self._widget.setValue(float(value))
+            self._widget.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.PlusMinus)
             self._widget.setFixedWidth(180)
             self._widget.valueChanged.connect(self._emit_change)
             layout.addWidget(self._widget)
