@@ -605,7 +605,6 @@ class ParameterWidget(QWidget):
 
     def _make_spin_box(self, value, is_float=False):
         """Cria widget numerico com botoes +/- visiveis."""
-        from PyQt6.QtCore import pyqtSignal
         w = QWidget()
         w.setFixedWidth(190)
         layout = QHBoxLayout(w)
@@ -620,34 +619,34 @@ class ParameterWidget(QWidget):
 
         delta = 0.01 if is_float else 1
 
+        def _adjust(d):
+            try:
+                cur = float(entry.text()) if is_float else int(entry.text())
+            except ValueError:
+                cur = 0
+            new = cur + d
+            entry.setText(str(int(new) if not is_float else round(new, 4)))
+            self._emit_change()
+
         btn_dec = QPushButton("−")
         btn_dec.setObjectName("spinBtn")
         btn_dec.setFixedSize(28, 28)
-        btn_dec.clicked.connect(lambda: self._spin_adjust(entry, -delta, is_float, w))
+        btn_dec.clicked.connect(lambda: _adjust(-delta))
         layout.addWidget(btn_dec)
 
         btn_inc = QPushButton("+")
         btn_inc.setObjectName("spinBtn")
         btn_inc.setFixedSize(28, 28)
-        btn_inc.clicked.connect(lambda: self._spin_adjust(entry, delta, is_float, w))
+        btn_inc.clicked.connect(lambda: _adjust(delta))
         layout.addWidget(btn_inc)
 
-        w.valueChanged = pyqtSignal()
+        entry.textChanged.connect(lambda: self._emit_change())
+
         w.value = lambda: (float(entry.text()) if is_float else int(entry.text()))
         w.setValue = lambda v: entry.setText(str(v))
         w._is_spin_widget = True
 
         return w
-
-    @staticmethod
-    def _spin_adjust(entry, delta, is_float, parent):
-        try:
-            cur = float(entry.text()) if is_float else int(entry.text())
-        except ValueError:
-            cur = 0
-        new = cur + delta
-        entry.setText(str(int(new) if not is_float else round(new, 4)))
-        parent.valueChanged.emit()
 
     def _emit_change(self) -> None:
         if isinstance(self._widget, QCheckBox):
