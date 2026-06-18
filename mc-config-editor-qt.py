@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # PyQt6
-from PyQt6.QtCore import Qt, QSettings, QTimer
+from PyQt6.QtCore import Qt, QSettings, QSize, QTimer
 from PyQt6.QtGui import QAction, QFont, QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
@@ -101,8 +101,41 @@ def icon_text(name: str) -> str:
     """Retorna texto com emoji (fallback) ou espaco reservado para icone."""
     icon_path = ICONS_DIR / f"{name}.png"
     if icon_path.is_file():
-        return "  "  # espaco para o icone (usado com setIcon)
+        return "  "
     return f"{ICON_FALLBACKS.get(name, '')} "
+
+def icon_button(btn: QPushButton, icon_name: str) -> None:
+    """Aplica icone PNG a um QPushButton. Se nao existir, usa emoji no texto."""
+    icon = load_icon(icon_name)
+    if not icon.isNull():
+        btn.setIcon(icon)
+        btn.setIconSize(QSize(22, 22))
+    else:
+        current = btn.text()
+        if not current.strip():
+            btn.setText(ICON_FALLBACKS.get(icon_name, ""))
+
+def labeled_icon(icon_name: str, text: str, parent=None) -> QWidget:
+    """Retorna widget com icone PNG + texto lado a lado."""
+    w = QWidget(parent)
+    layout = QHBoxLayout(w)
+    layout.setContentsMargins(0, 0, 0, 0)
+    layout.setSpacing(4)
+    pix = load_icon_pixmap(icon_name, 24)
+    if not pix.isNull():
+        icon_lbl = QLabel()
+        icon_lbl.setPixmap(pix)
+        icon_lbl.setFixedSize(26, 26)
+        icon_lbl.setScaledContents(True)
+        layout.addWidget(icon_lbl)
+    else:
+        fallback = QLabel(ICON_FALLBACKS.get(icon_name, ""))
+        fallback.setStyleSheet("font-size: 18px;")
+        layout.addWidget(fallback)
+    text_lbl = QLabel(text)
+    layout.addWidget(text_lbl)
+    layout.addStretch()
+    return w
 
 def _settings_dir() -> Path:
     if IS_WINDOWS:
@@ -771,7 +804,8 @@ class ParameterWidget(QWidget):
             layout.addWidget(self._widget)
 
         if self._on_delete is not None:
-            self._btn_del = QPushButton(icon_text("delete"))
+            self._btn_del = QPushButton("✕")
+            icon_button(self._btn_del, "delete")
             self._btn_del.setFixedSize(28, 28)
             self._btn_del.setToolTip(f"Remover '{self.key}'")
             self._btn_del.setStyleSheet(
@@ -893,9 +927,10 @@ class EditorPanel(QWidget):
             add_layout = QHBoxLayout(self._add_btn_row)
             add_layout.setContentsMargins(12, 8, 12, 8)
             add_layout.addStretch()
-            btn_add = QPushButton(f"{icon_text("add")}Adicionar Parametro")
+            btn_add = QPushButton(" Adicionar Parametro")
             btn_add.setObjectName("btnSalvar")
             btn_add.setFixedWidth(200)
+            icon_button(btn_add, "add")
             btn_add.clicked.connect(lambda: self._add_param(data))
             add_layout.addWidget(btn_add)
             self._scroll_layout.addWidget(self._add_btn_row)
@@ -1051,9 +1086,12 @@ class MainWindow(QMainWindow):
 
     def __init__(self, config_dir: Optional[str] = None):
         super().__init__()
-        self.setWindowTitle(f"{icon_text("pickaxe")}Minecraft Mod Config Editor")
+        self.setWindowTitle("Minecraft Mod Config Editor")
         self.setMinimumSize(1000, 650)
         self.resize(1300, 800)
+        app_icon = load_icon("pickaxe")
+        if not app_icon.isNull():
+            self.setWindowIcon(app_icon)
 
         # Restore geometry
         settings = load_settings()
@@ -1088,13 +1126,15 @@ class MainWindow(QMainWindow):
         menu = self.menuBar()
 
         file_menu = menu.addMenu("&Arquivo")
-        act_open = QAction(f"{icon_text("folder")}Abrir Instancia...", self)
+        act_open = QAction("Abrir Instancia...", self)
         act_open.setShortcut("Ctrl+O")
+        act_open.setIcon(load_icon("folder"))
         act_open.triggered.connect(self._open_instance)
         file_menu.addAction(act_open)
 
-        act_reload = QAction(f"{icon_text("refresh")}Recarregar", self)
+        act_reload = QAction("Recarregar", self)
         act_reload.setShortcut("Ctrl+R")
+        act_reload.setIcon(load_icon("refresh"))
         act_reload.triggered.connect(self._reload_all)
         file_menu.addAction(act_reload)
 
@@ -1105,11 +1145,13 @@ class MainWindow(QMainWindow):
         file_menu.addAction(act_exit)
 
         view_menu = menu.addMenu("&Visual")
-        act_css = QAction(f"{icon_text("palette")}Carregar CSS Customizado...", self)
+        act_css = QAction("Carregar CSS Customizado...", self)
+        act_css.setIcon(load_icon("palette"))
         act_css.triggered.connect(self._load_custom_css)
         view_menu.addAction(act_css)
 
-        act_reset_css = QAction(f"{icon_text("refresh")}Resetar CSS Padrao", self)
+        act_reset_css = QAction("Resetar CSS Padrao", self)
+        act_reset_css.setIcon(load_icon("refresh"))
         act_reset_css.triggered.connect(self._reset_css)
         view_menu.addAction(act_reset_css)
 
@@ -1134,10 +1176,9 @@ class MainWindow(QMainWindow):
         tree_layout = QVBoxLayout(tree_container)
         tree_layout.setContentsMargins(0, 0, 0, 0)
 
-        tree_header = QLabel(f"{icon_text("pickaxe")} Mods")
-        tree_header.setObjectName("windowTitle")
-        tree_header.setStyleSheet("padding: 6px 10px; background-color: #1c1a1a;")
-        tree_layout.addWidget(tree_header)
+        tree_header_container = labeled_icon("pickaxe", "Mods")
+        tree_header_container.setStyleSheet("padding: 6px 10px; background-color: #1c1a1a;")
+        tree_layout.addWidget(tree_header_container)
 
         self.tree = QTreeWidget()
         self.tree.setHeaderLabels(["Nome", "Tipo"])
@@ -1183,22 +1224,25 @@ class MainWindow(QMainWindow):
         btn_layout.setSpacing(8)
 
         btn_layout.addStretch()
-        self.btn_backup = QPushButton(f"{icon_text("save")}Backup")
+        self.btn_backup = QPushButton(" Backup")
         self.btn_backup.setObjectName("btnBackup")
         self.btn_backup.setEnabled(False)
         self.btn_backup.clicked.connect(self._backup_current)
+        icon_button(self.btn_backup, "save")
         btn_layout.addWidget(self.btn_backup)
 
-        self.btn_cancel = QPushButton(f"{icon_text("undo")}Cancelar")
+        self.btn_cancel = QPushButton(" Cancelar")
         self.btn_cancel.setObjectName("btnCancelar")
         self.btn_cancel.setEnabled(False)
         self.btn_cancel.clicked.connect(self._cancel_changes)
+        icon_button(self.btn_cancel, "undo")
         btn_layout.addWidget(self.btn_cancel)
 
-        self.btn_save = QPushButton(f"{icon_text("save")}Salvar")
+        self.btn_save = QPushButton(" Salvar")
         self.btn_save.setObjectName("btnSalvar")
         self.btn_save.setEnabled(False)
         self.btn_save.clicked.connect(self._save_current)
+        icon_button(self.btn_save, "save")
         btn_layout.addWidget(self.btn_save)
 
         editor_layout.addLayout(btn_layout)
@@ -1300,7 +1344,7 @@ class MainWindow(QMainWindow):
 
         self._populate_tree()
         total = sum(len(g.files) for g in self._groups)
-        self.setWindowTitle(f"{icon_text("pickaxe")}Minecraft Mod Config Editor — {inst_name}")
+        self.setWindowTitle(f"Minecraft Mod Config Editor — {inst_name}")
         self.status.showMessage(f"{icon_text('check')} {len(self._groups)} mods, {total} arquivos carregados")
 
         if save:
@@ -1411,7 +1455,7 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "Sobre — Minecraft Mod Config Editor",
-            f"{icon_text("pickaxe")}Minecraft Mod Config Editor\n\n"
+            "Minecraft Mod Config Editor\n\n"
             "Edita arquivos de configuracao de mods Minecraft\n"
             "(TOML, JSON, JSON5, YAML e formatos raw).\n\n"
             "Multiplataforma: Windows, Linux, macOS\n"
