@@ -560,12 +560,10 @@ class ParameterWidget(QWidget):
             layout.addStretch()
         elif isinstance(value, int):
             self._widget = self._make_spin_box(int(value), is_float=False)
-            self._widget.valueChanged.connect(self._emit_change)
             layout.addWidget(self._widget)
             layout.addStretch()
         elif isinstance(value, float):
             self._widget = self._make_spin_box(float(value), is_float=True)
-            self._widget.valueChanged.connect(self._emit_change)
             layout.addWidget(self._widget)
             layout.addStretch()
         elif isinstance(value, str):
