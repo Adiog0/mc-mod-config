@@ -530,7 +530,7 @@ class ParameterWidget(QWidget):
         self._old_value = value
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 2, 8, 2)
+        layout.setContentsMargins(8, 4, 8, 4)
 
         # Type label
         type_hint = ""
@@ -999,7 +999,7 @@ class MainWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         layout = QHBoxLayout(central)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(0)
 
         # Splitter: tree | editor
@@ -1055,7 +1055,7 @@ class MainWindow(QMainWindow):
 
         # Action buttons
         btn_layout = QHBoxLayout()
-        btn_layout.setContentsMargins(8, 6, 8, 6)
+        btn_layout.setContentsMargins(12, 8, 12, 10)
         btn_layout.setSpacing(8)
 
         btn_layout.addStretch()
