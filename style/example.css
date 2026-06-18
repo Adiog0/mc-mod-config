@@ -1,21 +1,28 @@
 /* =========================================================================
    Minecraft Mod Config Editor — Custom CSS Template
    =========================================================================
-   Copie este arquivo como "custom.css" e edite as cores.
-   Para aplicar: Menu Visual > Carregar CSS Customizado...
-   Para voltar ao padrao: Menu Visual > Resetar CSS Padrao
+   Este arquivo documenta TODOS os seletores disponiveis.
+   Cada bloco explica o que aquele seletor controla, a cor default,
+   e sugestoes de cores alternativas.
 
-   Formato: QSS (Qt Style Sheets) — similar a CSS web, com seletores Qt.
-   Documentacao oficial: https://doc.qt.io/qt-6/stylesheet-reference.html
+   PARA USAR:
+   1. Copie este arquivo para style/custom.css
+   2. Edite apenas as cores/propriedades que quiser mudar
+   3. Reinicie o app — ele detecta style/custom.css automaticamente
+
+   DICAS:
+   - Use busca & replace para trocar uma cor em todo o tema de uma vez
+   - Nao remova seletores — apenas mude os valores
+   - Cores em hexadecimal: #RRGGBB (ex: #ff0000 = vermelho)
    ========================================================================= */
 
-
 /* ════════════════════════════════════════════════════════════════════════
-   PALETA DE CORES (altere aqui para mudar todo o tema)
+   1. JANELA PRINCIPAL
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR BASE] Fundo geral dos widgets (painel lateral, menus) */
-/* default: #2c2c2c  →  sugerido: #1e1e2e (dark blue) ou #2b1f16 (marrom) */
+/* [COR DE FUNDO GERAL] Fundo de todos os widgets
+   default: #2c2c2c (cinza medio)
+   alternativas: #1e1e2e (dark blue), #2b1f16 (marrom dirt), #1a1a2e (navy) */
 QWidget {
     background-color: #2c2c2c;
     color: #e0e0e0;
@@ -23,53 +30,73 @@ QWidget {
     font-size: 13px;
 }
 
-/* [COR FUNDO PRINCIPAL] Janela principal (atras do splitter) */
-/* default: #1a1a1a */
+/* [COR DE FUNDO DA JANELA] Atras do splitter
+   default: #1a1a1a (quase preto)
+   alternativas: #0d0d0d (preto puro), #180e08 (marrom escuro) */
 QMainWindow {
     background-color: #1a1a1a;
 }
 
-/* [COR DIVISORIA] Barra entre arvore e editor */
-/* default: #4c4c4c */
-QSplitter::handle {
+/* [COR DA BARRA DIVISORIA] Entre painel esquerdo e direito
+   default: #4c4c4c (cinza)
+   alternativas: #666666, #3a3a3a */
+QSplitter#mainSplitter::handle {
     background-color: #4c4c4c;
     width: 4px;
 }
 
+/* [COR PAINEL ESQUERDO] Fundo do painel da arvore
+   default: #2c2c2c */
+QWidget#treePanel {
+    background-color: #2c2c2c;
+}
 
-/* ════════════════════════════════════════════════════════════════════════
-   AREA DE SCROLL (onde os parametros aparecem)
-   ════════════════════════════════════════════════════════════════════════ */
-
-/* [COR FUNDO EDITOR] */
-/* default: #1a1a1a */
-QScrollArea {
+/* [COR PAINEL DIREITO] Fundo do editor de parametros
+   default: #1a1a1a */
+QWidget#editorPanel {
     background-color: #1a1a1a;
-    border: 3px solid #141414;
 }
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   TITULOS E CABECALHOS
+   2. CABECALHOS E LABELS INFORMATIVOS
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR TITULO JANELA] Cabecalho "Mods" na arvore */
-/* default: #ffff55 (amarelo Minecraft) */
-QLabel#windowTitle {
+/* [CABECALHO DA ARVORE] "Mods" no topo do painel esquerdo
+   default: fundo #2c2929, texto #ffff55 (amarelo)
+   alternativas: #ffaa00 (dourado), #55ffff (cyan) */
+QWidget#treeHeader {
+    padding: 12px 12px;
+    background-color: #2c2929;
+}
+QWidget#treeHeader QLabel {
+    color: #ffff55;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* [LABEL DA INSTANCIA] "Voce esta editando: NomeDaInstancia"
+   default: fundo #22160d (marrom escuro), texto #ffff55 */
+QLabel#instanceLabel {
+    padding: 8px 12px;
+    background-color: #22160d;
+    color: #ffff55;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* [CABECALHO DO EDITOR] Nome do arquivo sendo editado
+   default: fundo #2c2929, texto #ffff55 */
+QLabel#editorHeader {
+    padding: 8px 12px;
+    background-color: #2c2929;
     color: #ffff55;
     font-size: 18px;
     font-weight: bold;
 }
 
-/* [COR SUBTITULO] Nome do arquivo no editor (ex: "config.json  [JSON]") */
-/* default: #7f7f7f (cinza) */
-QLabel#fileSub {
-    color: #7f7f7f;
-    font-size: 11px;
-}
-
-/* [COR SECAO] Titulo de secao aninhada (ex: "[ mob ]") */
-/* default: #ffff55, fundo #2c2929 */
+/* [TITULO DE SECAO] Ex: "[ mob ]", "[ client ]" nos parametros
+   default: fundo #2c2929, texto #ffff55 */
 QLabel#sectionHeader {
     color: #ffff55;
     font-size: 14px;
@@ -79,29 +106,56 @@ QLabel#sectionHeader {
     border: 2px solid #141414;
 }
 
+/* [PLACEHOLDER] Texto "Selecione um arquivo..." antes de abrir algo
+   default: #5a5a5a (cinza medio) */
+QLabel#editorPlaceholder {
+    color: #5a5a5a;
+    font-size: 15px;
+}
+
+/* [PLACEHOLDER DE ERRO] Quando o arquivo nao pode ser lido
+   default: #a83838 (vermelho) */
+QLabel#editorError {
+    color: #a83838;
+    font-size: 14px;
+}
+
+/* [LABEL DE PARAMETRO] Nome de cada chave no editor
+   default: #e0e0e0 (branco suave) */
+QLabel#paramLabel {
+    color: #e0e0e0;
+    font-size: 13px;
+}
+
+/* [ICONE FALLBACK] Emoji mostrado quando nao ha PNG
+   default: 18px */
+QLabel#iconFallback {
+    font-size: 18px;
+}
+
 
 /* ════════════════════════════════════════════════════════════════════════
-   CAMPOS DE TEXTO E NUMEROS (inputs)
+   3. CAMPOS DE ENTRADA (inputs)
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR INPUT] Campos de texto e spinboxes */
-/* default: fundo #000000, texto #ffffff, borda #a0a0a0 */
+/* [INPUTS] Campos de texto, numeros, spinboxes
+   default: fundo #000000, texto #ffffff, borda #a0a0a0 */
 QLineEdit, QSpinBox, QDoubleSpinBox {
     background-color: #000000;
     color: #ffffff;
     border: 2px solid #a0a0a0;
     padding: 6px;
-    selection-background-color: #5555ff;  /* cor da selecao de texto */
+    selection-background-color: #5555ff;
 }
 
-/* [COR INPUT FOCUS] Quando o campo esta selecionado */
-/* default: borda #ffffff */
+/* [INPUT EM FOCO] Quando o campo esta selecionado
+   default: borda #ffffff */
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
     border: 2px solid #ffffff;
 }
 
-/* [COR SETAS SPINBOX] Botoes de aumentar/diminuir */
-/* default: #707070 */
+/* [SETAS DO SPINBOX] Botoes + e - dos campos numericos
+   default: #707070 */
 QSpinBox::up-button, QSpinBox::down-button,
 QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
     background-color: #707070;
@@ -115,11 +169,11 @@ QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   BOTOES PADRAO (efeito 3D pixelado Minecraft)
+   4. BOTOES PADRAO
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR BOTAO NORMAL] */
-/* default: fundo #707070, borda clara/escura para efeito 3D */
+/* [BOTAO NORMAL] Aparencia base de todos os botoes
+   default: fundo #707070, efeito 3D com bordas claras/escuras */
 QPushButton {
     color: #e0e0e0;
     background-color: #707070;
@@ -132,8 +186,8 @@ QPushButton {
     border-right-color: #373737;
 }
 
-/* [COR BOTAO HOVER] Mouse sobre o botao */
-/* default: azul #7c89c4 */
+/* [BOTAO HOVER] Mouse sobre o botao
+   default: azul #7c89c4 */
 QPushButton:hover {
     background-color: #7c89c4;
     border-top-color: #a9b5f5;
@@ -143,7 +197,7 @@ QPushButton:hover {
     color: #fffbc8;
 }
 
-/* [COR BOTAO PRESSIONADO] Efeito afundado */
+/* [BOTAO PRESSIONADO] Inverte as bordas para efeito afundado */
 QPushButton:pressed {
     border-top-color: #373737;
     border-left-color: #373737;
@@ -153,11 +207,10 @@ QPushButton:pressed {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   BOTOES COLORIDOS DO RODAPE (use objectName no QSS)
+   5. BOTOES COLORIDOS (por funcao)
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR BOTAO BACKUP] Azul */
-/* default: #2e6085 */
+/* [BOTAO BACKUP] Azul — cria copia do arquivo */
 QPushButton#btnBackup {
     background-color: #2e6085;
     border-top-color: #4d8cb8;
@@ -167,8 +220,7 @@ QPushButton#btnBackup {
 }
 QPushButton#btnBackup:hover { background-color: #3d7cae; }
 
-/* [COR BOTAO CANCELAR] Vermelho */
-/* default: #852e2e */
+/* [BOTAO CANCELAR] Vermelho — descarta alteracoes */
 QPushButton#btnCancelar {
     background-color: #852e2e;
     border-top-color: #b84d4d;
@@ -178,8 +230,7 @@ QPushButton#btnCancelar {
 }
 QPushButton#btnCancelar:hover { background-color: #ae3d3d; }
 
-/* [COR BOTAO SALVAR] Verde */
-/* default: #2e8543 */
+/* [BOTAO SALVAR] Verde — grava alteracoes no disco */
 QPushButton#btnSalvar {
     background-color: #2e8543;
     border-top-color: #4db868;
@@ -189,8 +240,7 @@ QPushButton#btnSalvar {
 }
 QPushButton#btnSalvar:hover { background-color: #3dae58; }
 
-/* [COR BOTAO PROCURAR] Marrom */
-/* default: #6b4226 */
+/* [BOTAO PROCURAR] Marrom — abre dialogo de selecao de pasta */
 QPushButton#btnBrowse {
     background-color: #6b4226;
     border-top-color: #8a5533;
@@ -200,19 +250,35 @@ QPushButton#btnBrowse {
 }
 QPushButton#btnBrowse:hover { background-color: #8a5533; }
 
+/* [BOTAO ADICIONAR] Verde — adiciona novo parametro */
+QPushButton#btnAddParam {
+    background-color: #2e8543;
+    border-top-color: #4db868;
+    border-left-color: #4db868;
+    border-bottom-color: #123b1c;
+    border-right-color: #123b1c;
+}
+QPushButton#btnAddParam:hover { background-color: #3dae58; }
+
+/* [BOTAO EXCLUIR] Vermelho compacto — remove um parametro */
+QPushButton#btnDeleteParam {
+    background-color: #852e2e;
+    border-top-color: #b84d4d;
+    border-left-color: #b84d4d;
+    border-bottom-color: #3b1212;
+    border-right-color: #3b1212;
+    color: #e0e0e0;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 0px;
+}
+QPushButton#btnDeleteParam:hover { background-color: #ae3d3d; }
+
 
 /* ════════════════════════════════════════════════════════════════════════
-   CHECKBOX (toggle)
+   6. CHECKBOX (toggle)
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR CHECKBOX] */
-QCheckBox {
-    spacing: 8px;
-    color: #e0e0e0;
-}
-
-/* [COR CHECKBOX DESMARCADO] */
-/* default: #555555 */
 QCheckBox::indicator:unchecked {
     background-color: #555555;
     border: 2px solid #000000;
@@ -220,8 +286,6 @@ QCheckBox::indicator:unchecked {
     height: 18px;
 }
 
-/* [COR CHECKBOX MARCADO] */
-/* default: #4aa443 (verde) */
 QCheckBox::indicator:checked {
     background-color: #4aa443;
     border: 2px solid #000000;
@@ -231,39 +295,26 @@ QCheckBox::indicator:checked {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   ARVORE DE MODS (painel esquerdo)
+   7. ARVORE DE MODS (painel esquerdo)
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR FUNDO ARVORE] */
-/* default: #1a1a1a */
-QTreeWidget {
+QTreeWidget#modTree {
     background-color: #1a1a1a;
     border: 2px solid #141414;
     padding: 4px;
     color: #e0e0e0;
 }
 
-/* [COR ITEM ARVORE] Espacamento dos itens */
-QTreeWidget::item {
-    padding: 3px;
-}
+QTreeWidget#modTree::item { padding: 3px; }
 
-/* [COR ITEM SELECIONADO] */
-/* default: fundo #4c4c4c, texto #ffff55 */
-QTreeWidget::item:selected {
+QTreeWidget#modTree::item:selected {
     background-color: #4c4c4c;
     color: #ffff55;
     border: 1px dotted #ffffff;
 }
 
-/* [COR ITEM HOVER] Mouse sobre o item */
-/* default: #3a3a3a */
-QTreeWidget::item:hover {
-    background-color: #3a3a3a;
-}
+QTreeWidget#modTree::item:hover { background-color: #3a3a3a; }
 
-/* [COR CABECALHO ARVORE] Colunas "Nome" e "Tipo" */
-/* default: fundo #2c2929, texto #ffff55 */
 QHeaderView::section {
     background-color: #2c2929;
     color: #ffff55;
@@ -275,12 +326,20 @@ QHeaderView::section {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   EDITOR RAW (para arquivos nao-estruturados: CFG, TXT, etc)
+   8. AREA DE SCROLL DO EDITOR
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR EDITOR TEXTO] */
-/* default: fundo #0d0d0d */
-QTextEdit {
+QScrollArea {
+    background-color: #1a1a1a;
+    border: 3px solid #141414;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   9. EDITOR RAW (texto puro para CFG, TXT, etc)
+   ════════════════════════════════════════════════════════════════════════ */
+
+QTextEdit#rawEditor {
     background-color: #0d0d0d;
     color: #e0e0e0;
     border: 2px solid #a0a0a0;
@@ -290,12 +349,10 @@ QTextEdit {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   BARRA DE STATUS
+   10. BARRA DE STATUS
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR STATUS BAR] */
-/* default: fundo #2c2929, texto #7f7f7f */
-QStatusBar {
+QStatusBar#appStatusBar {
     background-color: #2c2929;
     color: #7f7f7f;
     border-top: 2px solid #141414;
@@ -304,54 +361,50 @@ QStatusBar {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MENU SUPERIOR
+   11. MENUS
    ════════════════════════════════════════════════════════════════════════ */
 
-/* [COR MENU BAR] */
-/* default: fundo #1a1a1a */
-QMenuBar {
-    background-color: #1a1a1a;
-    color: #e0e0e0;
-    border-bottom: 2px solid #141414;
-}
-
-/* [COR MENU ITEM SELECIONADO] */
-QMenuBar::item:selected {
-    background-color: #4c4c4c;
-}
-
-/* [COR MENU DROPDOWN] */
-QMenu {
-    background-color: #2c2c2c;
-    color: #e0e0e0;
-    border: 2px solid #000000;
-}
-
-/* [COR MENU DROPDOWN ITEM] */
-QMenu::item:selected {
-    background-color: #4c4c4c;
-    color: #ffff55;
-}
+QMenuBar { background-color: #1a1a1a; color: #e0e0e0; border-bottom: 2px solid #141414; }
+QMenuBar::item:selected { background-color: #4c4c4c; }
+QMenu { background-color: #2c2c2c; color: #e0e0e0; border: 2px solid #000000; }
+QMenu::item:selected { background-color: #4c4c4c; color: #ffff55; }
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   DICAS RAPIDAS
-   ════════════════════════════════════════════════════════════════════════
+   12. DIALOGO "ADICIONAR PARAMETRO"
+   ════════════════════════════════════════════════════════════════════════ */
 
-   1. Para mudar TUDO de uma cor so:
-      - Use busca & replace na cor desejada (ex: troque #2c2c2c por #1e1e2e)
+QDialog#addParamDialog { background-color: #2c2c2c; color: #e0e0e0; }
+QDialog#addParamDialog QLineEdit { background-color: #000000; color: #ffffff; border: 2px solid #a0a0a0; padding: 6px; }
+QDialog#addParamDialog QComboBox { background-color: #000000; color: #ffffff; border: 2px solid #a0a0a0; padding: 4px; }
+QDialog#addParamDialog QComboBox::drop-down { background-color: #707070; }
+QDialog#addParamDialog QPushButton { background-color: #707070; color: #e0e0e0; padding: 6px 14px; border: 2px solid #000000; }
 
-   2. Cores mais usadas no Minecraft:
-      - Marrom: #2b1f16 (painel), #3b2e1e (dirt)
-      - Verde: #5a8f31 (grass), #4aa443 (emerald)
-      - Azul:  #4aaed4 (diamond), #2e6085 (lapis)
-      - Vermelho: #a83838 (redstone)
-      - Dourado: #e5a835 (gold), #ffff55 (yellow text)
-      - Cinza:  #4c4c4c (stone), #707070 (iron)
 
-   3. Nao mexa nos seletores (QWidget, QPushButton, etc) — apenas nas cores.
-      Mexer nos seletores pode quebrar o layout.
+/* ════════════════════════════════════════════════════════════════════════
+   PALETAS PRONTAS (descomente uma para usar)
+   ════════════════════════════════════════════════════════════════════════ */
 
-   4. Salve como "custom.css" e carregue via Menu > Visual.
-      O arquivo default.css nunca eh modificado pelo app.
-   ========================================================================= */
+/* Tema Dark Blue:
+   QWidget { background-color: #1e1e2e; }
+   QMainWindow { background-color: #12121a; }
+   QPushButton { background-color: #3a3a5c; }
+*/
+
+/* Tema Marrom Terra:
+   QWidget { background-color: #3b2e1e; }
+   QMainWindow { background-color: #1c1208; }
+   QPushButton { background-color: #6b4226; }
+*/
+
+/* Tema Vermelho Nether:
+   QWidget { background-color: #2e1a1a; }
+   QMainWindow { background-color: #1a0d0d; }
+   QPushButton { background-color: #6b2020; }
+*/
+
+/* Tema Verde Forest:
+   QWidget { background-color: #1a2e1a; }
+   QMainWindow { background-color: #0d1a0d; }
+   QPushButton { background-color: #2e5a2e; }
+*/

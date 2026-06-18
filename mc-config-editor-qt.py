@@ -138,7 +138,7 @@ def labeled_icon(icon_name: str, text: str, parent=None) -> QWidget:
         layout.addWidget(icon_lbl)
     else:
         fallback = QLabel(ICON_FALLBACKS.get(icon_name, ""))
-        fallback.setStyleSheet("font-size: 18px;")
+        fallback.setObjectName("iconFallback")
         layout.addWidget(fallback)
     text_lbl = QLabel(text)
     layout.addWidget(text_lbl)
@@ -547,8 +547,8 @@ class ParameterWidget(QWidget):
 
         label_text = f"{key}  {type_hint}"
         self.label = QLabel(label_text)
+        self.label.setObjectName("paramLabel")
         self.label.setMinimumWidth(240)
-        self.label.setStyleSheet("color: #e0e0e0;")
         layout.addWidget(self.label)
 
         # Input widget based on type
@@ -603,14 +603,10 @@ class ParameterWidget(QWidget):
 
         if self._on_delete is not None:
             self._btn_del = QPushButton("✕")
+            self._btn_del.setObjectName("btnDeleteParam")
             icon_button(self._btn_del, "delete")
             self._btn_del.setFixedSize(28, 28)
             self._btn_del.setToolTip(f"Remover '{self.key}'")
-            self._btn_del.setStyleSheet(
-                "QPushButton { background-color: #852e2e; border-color: #b84d4d #3b1212 #3b1212 #b84d4d; "
-                "color: #e0e0e0; font-weight: bold; font-size: 13px; padding: 0px; } "
-                "QPushButton:hover { background-color: #ae3d3d; }"
-            )
             self._btn_del.clicked.connect(lambda: self._on_delete(self.key_path))
             layout.addWidget(self._btn_del)
 
@@ -654,14 +650,15 @@ class EditorPanel(QWidget):
 
         # Raw text editor (for non-structured formats)
         self._raw_editor = QTextEdit()
+        self._raw_editor.setObjectName("rawEditor")
         self._raw_editor.setVisible(False)
         self._raw_editor.textChanged.connect(self._on_raw_changed)
         self._layout.addWidget(self._raw_editor)
 
         # Placeholder
         self._placeholder = QLabel(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
+        self._placeholder.setObjectName("editorPlaceholder")
         self._placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._placeholder.setStyleSheet("color: #5a5a5a; font-size: 15px;")
         self._layout.addWidget(self._placeholder)
 
     def load_file(self, cf: ConfigFile) -> None:
@@ -703,7 +700,7 @@ class EditorPanel(QWidget):
         self._scroll.setVisible(False)
         self._raw_editor.setVisible(False)
         self._placeholder.setText(f"{icon_text('error')} Erro: {cf.parse_error}")
-        self._placeholder.setStyleSheet("color: #a83838; font-size: 14px;")
+        self._placeholder.setObjectName("editorError")
         self._placeholder.setVisible(True)
 
     def _build_structured(self, cf: ConfigFile) -> None:
@@ -726,7 +723,7 @@ class EditorPanel(QWidget):
             add_layout.setContentsMargins(12, 8, 12, 8)
             add_layout.addStretch()
             btn_add = QPushButton(" Adicionar Parametro")
-            btn_add.setObjectName("btnSalvar")
+            btn_add.setObjectName("btnAddParam")
             btn_add.setFixedWidth(200)
             icon_button(btn_add, "add")
             btn_add.clicked.connect(lambda: self._add_param(data))
@@ -778,9 +775,9 @@ class EditorPanel(QWidget):
         from PyQt6.QtWidgets import QDialog, QFormLayout, QDialogButtonBox, QComboBox
 
         dlg = QDialog(self)
+        dlg.setObjectName("addParamDialog")
         dlg.setWindowTitle("Adicionar Parametro")
         dlg.setMinimumWidth(360)
-        dlg.setStyleSheet(self.styleSheet())
         form = QFormLayout(dlg)
 
         name_edit = QLineEdit()
@@ -967,18 +964,21 @@ class MainWindow(QMainWindow):
 
         # Splitter: tree | editor
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setObjectName("mainSplitter")
         layout.addWidget(splitter)
 
         # ── Tree panel ──
         tree_container = QWidget()
+        tree_container.setObjectName("treePanel")
         tree_layout = QVBoxLayout(tree_container)
         tree_layout.setContentsMargins(0, 0, 0, 0)
 
         tree_header_container = labeled_icon("pickaxe", "Mods")
-        tree_header_container.setStyleSheet("padding: 12px 12px; background-color: #2c2929;")
+        tree_header_container.setObjectName("treeHeader")
         tree_layout.addWidget(tree_header_container)
 
         self.tree = QTreeWidget()
+        self.tree.setObjectName("modTree")
         self.tree.setHeaderLabels(["Nome", "Tipo"])
         self.tree.header().setStretchLastSection(False)
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -994,21 +994,18 @@ class MainWindow(QMainWindow):
 
         # ── Editor panel ──
         editor_container = QWidget()
+        editor_container.setObjectName("editorPanel")
         editor_layout = QVBoxLayout(editor_container)
         editor_layout.setContentsMargins(0, 0, 0, 0)
 
         # Instance info bar
         self.instance_label = QLabel("")
-        self.instance_label.setObjectName("sectionHeader")
-        self.instance_label.setStyleSheet(
-            "padding: 8px 12px; background-color: #22160d; font-size: 13px; color: #ffff55;"
-        )
+        self.instance_label.setObjectName("instanceLabel")
         self.instance_label.setVisible(False)
         editor_layout.addWidget(self.instance_label)
 
         self.editor_header = QLabel("")
-        self.editor_header.setObjectName("windowTitle")
-        self.editor_header.setStyleSheet("padding: 8px 12px; background-color: #2c2929; color: #ffff55;")
+        self.editor_header.setObjectName("editorHeader")
         self.editor_header.setVisible(False)
         editor_layout.addWidget(self.editor_header)
 
@@ -1051,6 +1048,7 @@ class MainWindow(QMainWindow):
 
     def _build_statusbar(self) -> None:
         self.status = QStatusBar()
+        self.status.setObjectName("appStatusBar")
         self.setStatusBar(self.status)
         self.status.showMessage(f"{icon_text('check')} Pronto. Selecione um arquivo para editar.")
 
@@ -1125,6 +1123,7 @@ class MainWindow(QMainWindow):
         self.editor._raw_editor.setVisible(False)
         self.editor._scroll.setVisible(False)
         self.editor._placeholder.setText(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
+        self.editor._placeholder.setObjectName("editorPlaceholder")
         self.editor._placeholder.setVisible(True)
         self.editor_header.setVisible(False)
 
