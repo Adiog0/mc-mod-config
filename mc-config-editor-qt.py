@@ -753,11 +753,17 @@ class EditorPanel(QWidget):
         container_layout.setContentsMargins(0, 0, 0, 0)
         container_layout.setSpacing(2)
 
-        btn = QPushButton(f"  ▼ {name}")
+        hint_expand = " [Clique para expandir]"
+        hint_collapse = " [Clique para recolher]"
+        btn = QPushButton(f"  ▶ {name}{hint_expand}")
         btn.setObjectName("sectionToggle")
+        btn.setProperty("mc_name", name)
+        btn.setProperty("mc_hint_expand", hint_expand)
+        btn.setProperty("mc_hint_collapse", hint_collapse)
         container_layout.addWidget(btn)
 
         content = QWidget()
+        content.setVisible(False)  # default collapsed
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(20, 2, 0, 2)
         content_layout.setSpacing(2)
@@ -775,11 +781,13 @@ class EditorPanel(QWidget):
     def _toggle_section(btn: QPushButton, content: QWidget) -> None:
         visible = content.isVisible()
         content.setVisible(not visible)
-        text = btn.text()
+        name = btn.property("mc_name")
         if visible:
-            btn.setText(text.replace("▼", "▶"))
+            hint = btn.property("mc_hint_expand")
+            btn.setText(f"  ▶ {name}{hint}")
         else:
-            btn.setText(text.replace("▶", "▼"))
+            hint = btn.property("mc_hint_collapse")
+            btn.setText(f"  ▼ {name}{hint}")
 
     def _delete_param(self, key_path: List[str]) -> None:
         if not self.current_file or not self.current_file.is_structured:
