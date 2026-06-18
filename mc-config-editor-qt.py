@@ -197,181 +197,185 @@ def save_custom_css_path(path: str) -> None:
 
 # ── Default Minecraft Theme CSS ─────────────────────────────────────────
 
-DEFAULT_CSS = r"""
-/* =========================================================================
-   CONFIGURACOES GERAIS DA JANELA (Tema Minecraft Dark Dirt/Gold)
+DEFAULT_CSS = r"""/* =========================================================================
+   Tema Minecraft Classic — esquema de cores unificado
+   Baseado no design system: cinza painel, botao 3D pixelado
    ========================================================================= */
+
+/* ── Base ──────────────────────────────────────────────────────────── */
 QWidget {
-    background-color: #2b1f16; /* Fundo Painel Lateral (Marrom Escuro) */
+    background-color: #2c2c2c;
     color: #e0e0e0;
     font-family: "Minecraftia", "Courier New", monospace;
     font-size: 13px;
 }
 
 QMainWindow {
-    background-color: #180e08; /* Fundo principal escuro */
+    background-color: #1a1a1a;
 }
 
 QSplitter::handle {
-    background-color: #472f1c; /* Divisoria marrom */
+    background-color: #4c4c4c;
     width: 4px;
 }
 
-/* =========================================================================
-   SCROLL AREA
-   ========================================================================= */
+/* ── Scroll Area ───────────────────────────────────────────────────── */
 QScrollArea {
-    background-color: #180e08;
-    border: none;
-    border-top: 2px solid #ffaa00; /* Linha amarela dourada superior */
+    background-color: #1a1a1a;
+    border: 3px solid #141414;
 }
 
-/* =========================================================================
-   TITULOS E LABELS
-   ========================================================================= */
+/* ── Titulos ───────────────────────────────────────────────────────── */
 QLabel#windowTitle {
-    color: #ffaa00; /* Dourado Minecraft */
+    color: #ffff55;
     font-size: 18px;
     font-weight: bold;
-    padding-bottom: 5px;
 }
 
 QLabel#fileSub {
-    color: #8c6f50; /* Texto secundario marrom acinzentado */
+    color: #7f7f7f;
     font-size: 11px;
 }
 
 QLabel#sectionHeader {
-    color: #ffaa00;
+    color: #ffff55;
     font-size: 14px;
     font-weight: bold;
-    background-color: #2c1b10;
+    background-color: #2c2929;
     padding: 4px 8px;
-    border: 2px solid #180e08;
+    border: 2px solid #141414;
 }
 
-/* =========================================================================
-   CAIXAS DE TEXTO / INPUTS NUMERICOS
-   ========================================================================= */
+/* ── Inputs (estilo chat/comandos Minecraft) ────────────────────────── */
 QLineEdit, QSpinBox, QDoubleSpinBox {
-    background-color: #2b2e33; /* Fundo acinzentado escuro dos inputs */
+    background-color: #000000;
     color: #ffffff;
-    border: 2px solid #4e5359;
-    border-radius: 4px;
+    border: 2px solid #a0a0a0;
     padding: 6px;
-    selection-background-color: #ffaa00;
-    selection-color: #180e08;
+    selection-background-color: #5555ff;
 }
 
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
-    border: 2px solid #ffaa00;
+    border: 2px solid #ffffff;
 }
 
 QSpinBox::up-button, QSpinBox::down-button,
 QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-    background-color: #4e5359;
-    border: none;
+    background-color: #707070;
+    border: 1px solid #000000;
     width: 16px;
-    border-radius: 2px;
 }
 QSpinBox::up-button:hover, QSpinBox::down-button:hover,
 QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
-    background-color: #6a717a;
+    background-color: #8a8a8a;
 }
 
-/* =========================================================================
-   BOTOES (Efeito arredondado da nova interface)
-   ========================================================================= */
+/* ── Botoes (efeito 3D pixelado classico do Minecraft) ──────────────── */
 QPushButton {
-    color: #ffffff;
-    background-color: #4e5359;
+    color: #e0e0e0;
+    background-color: #707070;
     padding: 8px 16px;
     font-weight: bold;
-    border-radius: 4px;
-    border: 2px solid #3b3f44;
+    border: 3px solid #000000;
+    border-top-color: #adadad;
+    border-left-color: #adadad;
+    border-bottom-color: #373737;
+    border-right-color: #373737;
 }
 
 QPushButton:hover {
-    background-color: #6a717a;
-    border-color: #4e5359;
+    background-color: #7c89c4;
+    border-top-color: #a9b5f5;
+    border-left-color: #a9b5f5;
+    border-bottom-color: #2e3863;
+    border-right-color: #2e3863;
+    color: #fffbc8;
 }
 
 QPushButton:pressed {
-    background-color: #3b3f44;
-    padding-top: 9px;
-    padding-left: 17px;
+    border-top-color: #373737;
+    border-left-color: #373737;
+    border-bottom-color: #adadad;
+    border-right-color: #adadad;
 }
 
+/* Variantes de cores (botoes do rodape) */
 QPushButton#btnBackup {
-    background-color: #4ba5b3; /* Ciano/Azul da imagem */
-    border-color: #3a8591;
+    background-color: #2e6085;
+    border-top-color: #4d8cb8;
+    border-left-color: #4d8cb8;
+    border-bottom-color: #12293b;
+    border-right-color: #12293b;
 }
-QPushButton#btnBackup:hover { background-color: #5bc0cf; }
+QPushButton#btnBackup:hover { background-color: #3d7cae; }
 
 QPushButton#btnCancelar {
-    background-color: #a34945; /* Vermelho ferrugem da imagem */
-    border-color: #823a37;
+    background-color: #852e2e;
+    border-top-color: #b84d4d;
+    border-left-color: #b84d4d;
+    border-bottom-color: #3b1212;
+    border-right-color: #3b1212;
 }
-QPushButton#btnCancelar:hover { background-color: #c45753; }
+QPushButton#btnCancelar:hover { background-color: #ae3d3d; }
 
 QPushButton#btnSalvar {
-    background-color: #57a84e; /* Verde da imagem */
-    border-color: #45873e;
+    background-color: #2e8543;
+    border-top-color: #4db868;
+    border-left-color: #4db868;
+    border-bottom-color: #123b1c;
+    border-right-color: #123b1c;
 }
-QPushButton#btnSalvar:hover { background-color: #6bc261; }
+QPushButton#btnSalvar:hover { background-color: #3dae58; }
 
 QPushButton#btnBrowse {
     background-color: #6b4226;
-    border-color: #4a2d1a;
+    border-top-color: #8a5533;
+    border-left-color: #8a5533;
+    border-bottom-color: #3b1f0e;
+    border-right-color: #3b1f0e;
 }
 QPushButton#btnBrowse:hover { background-color: #8a5533; }
 
-/* =========================================================================
-   CHECKBOX / SWITCH (Estilo Pílula/Alavanca)
-   ========================================================================= */
+/* ── Checkbox (toggle estilo alavanca) ──────────────────────────────── */
 QCheckBox {
     spacing: 8px;
     color: #e0e0e0;
 }
 
-QCheckBox::indicator {
-    width: 32px;
-    height: 16px;
-    border-radius: 8px;
-}
-
 QCheckBox::indicator:unchecked {
-    background-color: #1a1a1a;
-    border: 2px solid #4e5359;
+    background-color: #555555;
+    border: 2px solid #000000;
+    width: 18px;
+    height: 18px;
 }
 
 QCheckBox::indicator:checked {
-    background-color: #ffaa00; /* Amarelo/Dourado quando ativo */
-    border: 2px solid #c68500;
+    background-color: #4aa443;
+    border: 2px solid #000000;
+    width: 18px;
+    height: 18px;
 }
 
-/* =========================================================================
-   ARVORE LATERAL (Mods / Arquivos)
-   ========================================================================= */
+/* ── Arvore lateral (Mods / Arquivos) ───────────────────────────────── */
 QTreeWidget {
-    background-color: #2b1f16;
-    border: none;
-    padding: 5px;
+    background-color: #1a1a1a;
+    border: 2px solid #141414;
+    padding: 4px;
     color: #e0e0e0;
 }
 
 QTreeWidget::item {
-    padding: 4px;
-    border-radius: 4px;
+    padding: 3px;
 }
 
 QTreeWidget::item:selected {
-    background-color: #472f1c; /* Marrom claro destaque */
-    color: #ffaa00;
+    background-color: #4c4c4c;
+    color: #ffff55;
+    border: 1px dotted #ffffff;
 }
 
 QTreeWidget::item:hover {
-    background-color: #38271b;
+    background-color: #3a3a3a;
 }
 
 QTreeWidget::branch:has-children:!has-siblings:closed,
@@ -380,58 +384,51 @@ QTreeWidget::branch:closed:has-children:has-siblings {
 }
 
 QHeaderView::section {
-    background-color: #22160d;
-    color: #ffaa00;
-    border: none;
-    border-bottom: 2px solid #472f1c;
+    background-color: #2c2929;
+    color: #ffff55;
+    border: 2px solid #000000;
     padding: 4px;
     font-weight: bold;
     font-size: 13px;
 }
 
-/* =========================================================================
-   TEXT EDIT (raw editor)
-   ========================================================================= */
+/* ── Editor raw ──────────────────────────────────────────────────────── */
 QTextEdit {
-    background-color: #0f0905;
-    color: #ffaa00;
-    border: 2px solid #472f1c;
+    background-color: #0d0d0d;
+    color: #e0e0e0;
+    border: 2px solid #a0a0a0;
     font-family: "Courier New", monospace;
     font-size: 12px;
 }
 
-/* =========================================================================
-   STATUS BAR
-   ========================================================================= */
+/* ── Status Bar ──────────────────────────────────────────────────────── */
 QStatusBar {
-    background-color: #2b1f16;
-    color: #8c6f50;
-    border-top: 1px solid #472f1c;
+    background-color: #2c2929;
+    color: #7f7f7f;
+    border-top: 2px solid #141414;
     font-size: 11px;
 }
 
-/* =========================================================================
-   MENU BAR
-   ========================================================================= */
+/* ── Menu Bar ────────────────────────────────────────────────────────── */
 QMenuBar {
-    background-color: #22160d;
+    background-color: #1a1a1a;
     color: #e0e0e0;
-    border-bottom: 2px solid #472f1c;
+    border-bottom: 2px solid #141414;
 }
 
 QMenuBar::item:selected {
-    background-color: #472f1c;
+    background-color: #4c4c4c;
 }
 
 QMenu {
-    background-color: #2b1f16;
+    background-color: #2c2c2c;
     color: #e0e0e0;
-    border: 1px solid #472f1c;
+    border: 2px solid #000000;
 }
 
 QMenu::item:selected {
-    background-color: #472f1c;
-    color: #ffaa00;
+    background-color: #4c4c4c;
+    color: #ffff55;
 }
 """
 
@@ -876,7 +873,7 @@ class EditorPanel(QWidget):
         # Placeholder
         self._placeholder = QLabel(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
         self._placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._placeholder.setStyleSheet("color: #7f7f7f; font-size: 15px;")
+        self._placeholder.setStyleSheet("color: #5a5a5a; font-size: 15px;")
         self._layout.addWidget(self._placeholder)
 
     def load_file(self, cf: ConfigFile) -> None:
@@ -1190,7 +1187,7 @@ class MainWindow(QMainWindow):
         tree_layout.setContentsMargins(0, 0, 0, 0)
 
         tree_header_container = labeled_icon("pickaxe", "Mods")
-        tree_header_container.setStyleSheet("padding: 12px 12px; background-color: #22160d;")
+        tree_header_container.setStyleSheet("padding: 12px 12px; background-color: #2c2929;")
         tree_layout.addWidget(tree_header_container)
 
         self.tree = QTreeWidget()
@@ -1216,14 +1213,14 @@ class MainWindow(QMainWindow):
         self.instance_label = QLabel("")
         self.instance_label.setObjectName("sectionHeader")
         self.instance_label.setStyleSheet(
-            "padding: 8px 12px; background-color: #22160d; font-size: 13px; color: #ffaa00;"
+            "padding: 8px 12px; background-color: #22160d; font-size: 13px; color: #ffff55;"
         )
         self.instance_label.setVisible(False)
         editor_layout.addWidget(self.instance_label)
 
         self.editor_header = QLabel("")
         self.editor_header.setObjectName("windowTitle")
-        self.editor_header.setStyleSheet("padding: 8px 12px; background-color: #22160d; color: #ffaa00;")
+        self.editor_header.setStyleSheet("padding: 8px 12px; background-color: #2c2929; color: #ffff55;")
         self.editor_header.setVisible(False)
         editor_layout.addWidget(self.editor_header)
 
