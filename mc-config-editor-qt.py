@@ -631,11 +631,13 @@ class ParameterWidget(QWidget):
     """Widget que representa um parametro unico no editor."""
 
     def __init__(self, key: str, value: Any, key_path: List[str],
-                 on_change: callable, parent=None):
+                 on_change: callable, on_delete: Optional[callable] = None,
+                 parent=None):
         super().__init__(parent)
         self.key = key
         self.key_path = key_path
         self._on_change = on_change
+        self._on_delete = on_delete
         self._old_value = value
 
         layout = QHBoxLayout(self)
@@ -687,36 +689,40 @@ class ParameterWidget(QWidget):
         elif isinstance(value, str):
             if len(value) > 60:
                 self._widget = QTextEdit()
-                self._widget.setPlainText(value)
+                self._widget.setPlainText(str(value))
                 self._widget.setFixedHeight(80)
                 self._widget.setMinimumWidth(300)
-                self._widget.textChanged.connect(
-                    lambda: self._emit_change()
-                )
+                self._widget.textChanged.connect(lambda: self._emit_change())
                 layout.addWidget(self._widget)
             else:
                 self._widget = QLineEdit(str(value))
                 self._widget.setMinimumWidth(200)
-                self._widget.textChanged.connect(
-                    lambda txt: self._emit_change()
-                )
+                self._widget.textChanged.connect(lambda txt: self._emit_change())
                 layout.addWidget(self._widget)
         elif isinstance(value, list):
             self._widget = QTextEdit()
             self._widget.setPlainText("\n".join(str(v) for v in value))
             self._widget.setFixedHeight(80)
             self._widget.setMinimumWidth(300)
-            self._widget.textChanged.connect(
-                lambda: self._emit_change()
-            )
+            self._widget.textChanged.connect(lambda: self._emit_change())
             layout.addWidget(self._widget)
         else:
             self._widget = QLineEdit(str(value) if value is not None else "")
             self._widget.setMinimumWidth(200)
-            self._widget.textChanged.connect(
-                lambda txt: self._emit_change()
-            )
+            self._widget.textChanged.connect(lambda txt: self._emit_change())
             layout.addWidget(self._widget)
+
+        if self._on_delete is not None:
+            self._btn_del = QPushButton("✕")
+            self._btn_del.setFixedSize(28, 28)
+            self._btn_del.setToolTip(f"Remover '{self.key}'")
+            self._btn_del.setStyleSheet(
+                "QPushButton { background-color: #852e2e; border-color: #b84d4d #3b1212 #3b1212 #b84d4d; "
+                "color: #e0e0e0; font-weight: bold; font-size: 13px; padding: 0px; } "
+                "QPushButton:hover { background-color: #ae3d3d; }"
+            )
+            self._btn_del.clicked.connect(lambda: self._on_delete(self.key_path))
+            layout.addWidget(self._btn_del)
 
     def _emit_change(self) -> None:
         if isinstance(self._widget, QCheckBox):
@@ -815,13 +821,26 @@ class EditorPanel(QWidget):
         if isinstance(data, dict):
             self._render_dict(cf, data, [])
         elif isinstance(data, list):
-            pw = ParameterWidget("(root)", data, ["_root"], self._on_param_change, self)
+            pw = ParameterWidget("(root)", data, ["_root"], self._on_param_change, None, self)
             self._scroll_layout.addWidget(pw)
             self._param_widgets.append(pw)
         else:
-            pw = ParameterWidget("(value)", data, ["_root"], self._on_param_change, self)
+            pw = ParameterWidget("(value)", data, ["_root"], self._on_param_change, None, self)
             self._scroll_layout.addWidget(pw)
             self._param_widgets.append(pw)
+
+        # ADD button for dict-based configs
+        if isinstance(data, dict):
+            self._add_btn_row = QWidget()
+            add_layout = QHBoxLayout(self._add_btn_row)
+            add_layout.setContentsMargins(12, 8, 12, 8)
+            add_layout.addStretch()
+            btn_add = QPushButton("➕ Adicionar Parametro")
+            btn_add.setObjectName("btnSalvar")
+            btn_add.setFixedWidth(200)
+            btn_add.clicked.connect(lambda: self._add_param(data))
+            add_layout.addWidget(btn_add)
+            self._scroll_layout.addWidget(self._add_btn_row)
 
     def _render_dict(self, cf: ConfigFile, d: dict, prefix: List[str]) -> None:
         for key, value in d.items():
@@ -832,13 +851,100 @@ class EditorPanel(QWidget):
                 self._scroll_layout.addWidget(header)
                 self._render_dict(cf, value, key_path)
             elif isinstance(value, list):
-                pw = ParameterWidget(key, value, key_path, self._on_param_change, self)
+                pw = ParameterWidget(key, value, key_path, self._on_param_change,
+                                     self._delete_param, self)
                 self._scroll_layout.addWidget(pw)
                 self._param_widgets.append(pw)
             else:
-                pw = ParameterWidget(key, value, key_path, self._on_param_change, self)
+                pw = ParameterWidget(key, value, key_path, self._on_param_change,
+                                     self._delete_param, self)
                 self._scroll_layout.addWidget(pw)
                 self._param_widgets.append(pw)
+
+    def _delete_param(self, key_path: List[str]) -> None:
+        if not self.current_file or not self.current_file.is_structured:
+            return
+        if len(key_path) == 0:
+            return
+        data = self.current_file._modified_data
+        for k in key_path[:-1]:
+            if isinstance(data, dict) and k in data:
+                data = data[k]
+            else:
+                return
+        key_to_remove = key_path[-1]
+        if isinstance(data, dict) and key_to_remove in data:
+            del data[key_to_remove]
+            self.current_file.modified = True
+            self._modified = True
+            self.load_file(self.current_file)
+            if self.on_modified:
+                self.on_modified()
+
+    def _add_param(self, data: dict) -> None:
+        if not self.current_file:
+            return
+        from PyQt6.QtWidgets import QDialog, QFormLayout, QDialogButtonBox, QComboBox
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Adicionar Parametro")
+        dlg.setMinimumWidth(360)
+        dlg.setStyleSheet(self.styleSheet())
+        form = QFormLayout(dlg)
+
+        name_edit = QLineEdit()
+        name_edit.setPlaceholderText("nome_do_parametro")
+        form.addRow("Nome:", name_edit)
+
+        type_combo = QComboBox()
+        type_combo.addItems(["texto", "numero inteiro", "numero decimal", "booleano (true/false)"])
+        form.addRow("Tipo:", type_combo)
+
+        value_edit = QLineEdit()
+        value_edit.setPlaceholderText("valor")
+        form.addRow("Valor:", value_edit)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |
+                                    QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        form.addRow(buttons)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        key = name_edit.text().strip()
+        if not key:
+            return
+
+        val_str = value_edit.text().strip()
+        val_type = type_combo.currentIndex()
+        if val_type == 0:
+            value = val_str
+        elif val_type == 1:
+            try:
+                value = int(val_str) if val_str else 0
+            except ValueError:
+                QMessageBox.warning(self, "Erro", f"Valor invalido para inteiro: {val_str}")
+                return
+        elif val_type == 2:
+            try:
+                value = float(val_str) if val_str else 0.0
+            except ValueError:
+                QMessageBox.warning(self, "Erro", f"Valor invalido para decimal: {val_str}")
+                return
+        elif val_type == 3:
+            low = val_str.lower()
+            value = low in ("true", "1", "yes", "sim", "s")
+        else:
+            value = val_str
+
+        data[key] = value
+        self.current_file.modified = True
+        self._modified = True
+        self.load_file(self.current_file)
+        if self.on_modified:
+            self.on_modified()
 
     def _on_param_change(self, key_path: List[str], new_value: Any,
                          was_list: bool = False) -> None:
