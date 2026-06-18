@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # PyQt6
 from PyQt6.QtCore import Qt, QSettings, QTimer
-from PyQt6.QtGui import QAction, QFont
+from PyQt6.QtGui import QAction, QFont, QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
@@ -57,7 +57,52 @@ IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
 IS_LINUX = sys.platform.startswith("linux")
 
-# ── Settings ────────────────────────────────────────────────────────────
+# ── Icon Loader ────────────────────────────────────────────────────────
+
+ICONS_DIR = SCRIPT_DIR / "icons"
+
+ICON_FALLBACKS: Dict[str, str] = {
+    "pickaxe": "⛏",
+    "castle": "🏰",
+    "folder": "📂",
+    "refresh": "🔄",
+    "palette": "🎨",
+    "save": "💾",
+    "undo": "↩",
+    "block": "🧱",
+    "settings": "⚙",
+    "crafting": "🛠",
+    "scroll": "📜",
+    "file": "🏷",
+    "add": "➕",
+    "delete": "✕",
+    "wrench": "🔨",
+    "check": "✅",
+    "error": "❌",
+}
+
+def load_icon(name: str) -> QIcon:
+    """Carrega icone do arquivo icons/<name>.png, fallback para emoji."""
+    icon_path = ICONS_DIR / f"{name}.png"
+    if icon_path.is_file():
+        return QIcon(str(icon_path))
+    return QIcon()
+
+def load_icon_pixmap(name: str, size: int = 24) -> QPixmap:
+    """Carrega icone como QPixmap redimensionado, fallback vazio."""
+    icon_path = ICONS_DIR / f"{name}.png"
+    if icon_path.is_file():
+        pix = QPixmap(str(icon_path))
+        return pix.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatio,
+                          Qt.TransformationMode.SmoothTransformation)
+    return QPixmap()
+
+def icon_text(name: str) -> str:
+    """Retorna texto com emoji (fallback) ou espaco reservado para icone."""
+    icon_path = ICONS_DIR / f"{name}.png"
+    if icon_path.is_file():
+        return "  "  # espaco para o icone (usado com setIcon)
+    return f"{ICON_FALLBACKS.get(name, '')} "
 
 def _settings_dir() -> Path:
     if IS_WINDOWS:
@@ -371,6 +416,19 @@ def mod_key_to_display(key: str) -> str:
 
 def format_timestamp() -> str:
     return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+_FILE_ICON_MAP: Dict[str, str] = {
+    "toml": "settings",
+    "json": "crafting",
+    "json5": "crafting",
+    "yaml": "scroll",
+}
+
+
+def _file_format_icon(fmt: str) -> QIcon:
+    name = _FILE_ICON_MAP.get(fmt, "file")
+    return load_icon(name)
 
 
 class ConfigFile:
@@ -713,7 +771,7 @@ class ParameterWidget(QWidget):
             layout.addWidget(self._widget)
 
         if self._on_delete is not None:
-            self._btn_del = QPushButton("✕")
+            self._btn_del = QPushButton(icon_text("delete"))
             self._btn_del.setFixedSize(28, 28)
             self._btn_del.setToolTip(f"Remover '{self.key}'")
             self._btn_del.setStyleSheet(
@@ -769,7 +827,7 @@ class EditorPanel(QWidget):
         self._layout.addWidget(self._raw_editor)
 
         # Placeholder
-        self._placeholder = QLabel("🔨 Selecione um arquivo de configuracao na arvore ao lado")
+        self._placeholder = QLabel(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
         self._placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._placeholder.setStyleSheet("color: #7f7f7f; font-size: 15px;")
         self._layout.addWidget(self._placeholder)
@@ -812,7 +870,7 @@ class EditorPanel(QWidget):
     def _show_error(self, cf: ConfigFile) -> None:
         self._scroll.setVisible(False)
         self._raw_editor.setVisible(False)
-        self._placeholder.setText(f"❌ Erro: {cf.parse_error}")
+        self._placeholder.setText(f"{icon_text('error')} Erro: {cf.parse_error}")
         self._placeholder.setStyleSheet("color: #a83838; font-size: 14px;")
         self._placeholder.setVisible(True)
 
@@ -835,7 +893,7 @@ class EditorPanel(QWidget):
             add_layout = QHBoxLayout(self._add_btn_row)
             add_layout.setContentsMargins(12, 8, 12, 8)
             add_layout.addStretch()
-            btn_add = QPushButton("➕ Adicionar Parametro")
+            btn_add = QPushButton(f"{icon_text("add")}Adicionar Parametro")
             btn_add.setObjectName("btnSalvar")
             btn_add.setFixedWidth(200)
             btn_add.clicked.connect(lambda: self._add_param(data))
@@ -993,7 +1051,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, config_dir: Optional[str] = None):
         super().__init__()
-        self.setWindowTitle("⛏ Minecraft Mod Config Editor")
+        self.setWindowTitle(f"{icon_text("pickaxe")}Minecraft Mod Config Editor")
         self.setMinimumSize(1000, 650)
         self.resize(1300, 800)
 
@@ -1030,12 +1088,12 @@ class MainWindow(QMainWindow):
         menu = self.menuBar()
 
         file_menu = menu.addMenu("&Arquivo")
-        act_open = QAction("📂 Abrir Instancia...", self)
+        act_open = QAction(f"{icon_text("folder")}Abrir Instancia...", self)
         act_open.setShortcut("Ctrl+O")
         act_open.triggered.connect(self._open_instance)
         file_menu.addAction(act_open)
 
-        act_reload = QAction("🔄 Recarregar", self)
+        act_reload = QAction(f"{icon_text("refresh")}Recarregar", self)
         act_reload.setShortcut("Ctrl+R")
         act_reload.triggered.connect(self._reload_all)
         file_menu.addAction(act_reload)
@@ -1047,11 +1105,11 @@ class MainWindow(QMainWindow):
         file_menu.addAction(act_exit)
 
         view_menu = menu.addMenu("&Visual")
-        act_css = QAction("🎨 Carregar CSS Customizado...", self)
+        act_css = QAction(f"{icon_text("palette")}Carregar CSS Customizado...", self)
         act_css.triggered.connect(self._load_custom_css)
         view_menu.addAction(act_css)
 
-        act_reset_css = QAction("🔄 Resetar CSS Padrao", self)
+        act_reset_css = QAction(f"{icon_text("refresh")}Resetar CSS Padrao", self)
         act_reset_css.triggered.connect(self._reset_css)
         view_menu.addAction(act_reset_css)
 
@@ -1076,7 +1134,7 @@ class MainWindow(QMainWindow):
         tree_layout = QVBoxLayout(tree_container)
         tree_layout.setContentsMargins(0, 0, 0, 0)
 
-        tree_header = QLabel("⛏  Mods")
+        tree_header = QLabel(f"{icon_text("pickaxe")} Mods")
         tree_header.setObjectName("windowTitle")
         tree_header.setStyleSheet("padding: 6px 10px; background-color: #1c1a1a;")
         tree_layout.addWidget(tree_header)
@@ -1125,19 +1183,19 @@ class MainWindow(QMainWindow):
         btn_layout.setSpacing(8)
 
         btn_layout.addStretch()
-        self.btn_backup = QPushButton("💾 Backup")
+        self.btn_backup = QPushButton(f"{icon_text("save")}Backup")
         self.btn_backup.setObjectName("btnBackup")
         self.btn_backup.setEnabled(False)
         self.btn_backup.clicked.connect(self._backup_current)
         btn_layout.addWidget(self.btn_backup)
 
-        self.btn_cancel = QPushButton("↩ Cancelar")
+        self.btn_cancel = QPushButton(f"{icon_text("undo")}Cancelar")
         self.btn_cancel.setObjectName("btnCancelar")
         self.btn_cancel.setEnabled(False)
         self.btn_cancel.clicked.connect(self._cancel_changes)
         btn_layout.addWidget(self.btn_cancel)
 
-        self.btn_save = QPushButton("💾 Salvar")
+        self.btn_save = QPushButton(f"{icon_text("save")}Salvar")
         self.btn_save.setObjectName("btnSalvar")
         self.btn_save.setEnabled(False)
         self.btn_save.clicked.connect(self._save_current)
@@ -1152,7 +1210,7 @@ class MainWindow(QMainWindow):
     def _build_statusbar(self) -> None:
         self.status = QStatusBar()
         self.setStatusBar(self.status)
-        self.status.showMessage("✅ Pronto. Selecione um arquivo para editar.")
+        self.status.showMessage(f"{icon_text('check')} Pronto. Selecione um arquivo para editar.")
 
     # ── CSS ─────────────────────────────────────────────────────────
 
@@ -1167,7 +1225,7 @@ class MainWindow(QMainWindow):
             if app:
                 css = Path(path).read_text(encoding="utf-8")
                 app.setStyleSheet(css)
-            self.status.showMessage(f"✅ CSS carregado: {Path(path).name}")
+            self.status.showMessage(f"{icon_text('check')} CSS carregado: {Path(path).name}")
 
     def _reset_css(self) -> None:
         data = load_settings()
@@ -1177,7 +1235,7 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app:
             app.setStyleSheet(DEFAULT_CSS)
-        self.status.showMessage("✅ CSS padrao restaurado")
+        self.status.showMessage(f"{icon_text('check')} CSS padrao restaurado")
 
     # ── Instance loading ─────────────────────────────────────────────
 
@@ -1220,12 +1278,12 @@ class MainWindow(QMainWindow):
         self.editor._clear_widgets()
         self.editor._raw_editor.setVisible(False)
         self.editor._scroll.setVisible(False)
-        self.editor._placeholder.setText("🔨 Selecione um arquivo de configuracao na arvore ao lado")
+        self.editor._placeholder.setText(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
         self.editor._placeholder.setVisible(True)
         self.editor_header.setVisible(False)
 
         # Mostra label da instancia atual
-        self.instance_label.setText(f"🏰 Você está editando: {inst_name}")
+        self.instance_label.setText(f"{icon_text("castle")}Voce esta editando: {inst_name}")
         self.instance_label.setVisible(True)
 
         # Desabilita botoes
@@ -1242,8 +1300,8 @@ class MainWindow(QMainWindow):
 
         self._populate_tree()
         total = sum(len(g.files) for g in self._groups)
-        self.setWindowTitle(f"⛏ Minecraft Mod Config Editor — {inst_name}")
-        self.status.showMessage(f"✅ {len(self._groups)} mods, {total} arquivos carregados")
+        self.setWindowTitle(f"{icon_text("pickaxe")}Minecraft Mod Config Editor — {inst_name}")
+        self.status.showMessage(f"{icon_text('check')} {len(self._groups)} mods, {total} arquivos carregados")
 
         if save:
             set_last_instance(str(config_dir))
@@ -1259,14 +1317,15 @@ class MainWindow(QMainWindow):
 
     def _populate_tree(self) -> None:
         self.tree.clear()
+        icon_mod = load_icon("block")
         for group in self._groups:
             mod_item = QTreeWidgetItem(self.tree)
-            mod_item.setText(0, f"🧱 {group.display_name}")
+            mod_item.setText(0, group.display_name)
+            mod_item.setIcon(0, icon_mod)
             mod_item.setText(1, f"{len(group.files)}")
-            mod_item.setData(0, Qt.ItemDataRole.UserRole, None)  # marks as mod
+            mod_item.setData(0, Qt.ItemDataRole.UserRole, None)
             mod_item.setToolTip(0, f"{len(group.files)} config files")
 
-            # Bold font for mod items
             font = mod_item.font(0)
             font.setBold(True)
             mod_item.setFont(0, font)
@@ -1276,6 +1335,9 @@ class MainWindow(QMainWindow):
                 file_item.setText(0, cf.display_name)
                 file_item.setText(1, cf.fmt.upper())
                 file_item.setData(0, Qt.ItemDataRole.UserRole, cf)
+                fmt_icon = _file_format_icon(cf.fmt)
+                if not fmt_icon.isNull():
+                    file_item.setIcon(0, fmt_icon)
 
         if self._groups and len(self._groups) <= 15:
             self.tree.expandAll()
@@ -1299,7 +1361,7 @@ class MainWindow(QMainWindow):
 
     def _load_file_into_editor(self, cf: ConfigFile) -> None:
         log.info("Editor: carregando %s (%s)", cf.path.name, cf.fmt)
-        self.editor_header.setText(f"📄 {cf.display_name}")
+        self.editor_header.setText(f"{icon_text("file")}{cf.display_name}")
         self.editor_header.setObjectName("fileSub" if cf.is_structured else "windowTitle")
         self.editor_header.setVisible(True)
         self.editor.load_file(cf)
@@ -1319,9 +1381,9 @@ class MainWindow(QMainWindow):
             return
         bak = self._current_file.backup()
         if bak:
-            self.status.showMessage(f"✅ Backup: {bak.name}")
+            self.status.showMessage(f"{icon_text('check')} Backup: {bak.name}")
         else:
-            self.status.showMessage("❌ Erro ao criar backup.")
+            self.status.showMessage(f"{icon_text('error')} Erro ao criar backup.")
 
     def _cancel_changes(self) -> None:
         if not self._current_file or not self._current_file.modified:
@@ -1332,24 +1394,24 @@ class MainWindow(QMainWindow):
         self._current_file.parse()
         self.editor.reload()
         self._update_buttons()
-        self.status.showMessage("↩ Alteracoes descartadas.")
+        self.status.showMessage(f"{icon_text('undo')} Alteracoes descartadas.")
 
     def _save_current(self) -> None:
         if not self._current_file:
             return
         ok, msg = self._current_file.save()
         if ok:
-            self.status.showMessage(f"✅ {msg}")
+            self.status.showMessage(f"{icon_text('check')} {msg}")
             self._update_buttons()
             self.editor._modified = False
         else:
-            self.status.showMessage(f"❌ {msg}")
+            self.status.showMessage(f"{icon_text('error')} {msg}")
 
     def _show_about(self) -> None:
         QMessageBox.about(
             self,
             "Sobre — Minecraft Mod Config Editor",
-            "⛏ Minecraft Mod Config Editor\n\n"
+            f"{icon_text("pickaxe")}Minecraft Mod Config Editor\n\n"
             "Edita arquivos de configuracao de mods Minecraft\n"
             "(TOML, JSON, JSON5, YAML e formatos raw).\n\n"
             "Multiplataforma: Windows, Linux, macOS\n"
