@@ -80,27 +80,36 @@ ICON_FALLBACKS: Dict[str, str] = {
     "check": "✅",
     "error": "❌",
 }
+def _find_icon_file(name: str) -> Optional[Path]:
+    """Procura arquivo de icone (case-insensitive, ignora espacos)."""
+    name = name.strip().lower()
+    if ICONS_DIR.is_dir():
+        for entry in ICONS_DIR.iterdir():
+            if entry.is_file() and entry.stem.strip().lower() == name:
+                return entry
+    return None
+
 
 def load_icon(name: str) -> QIcon:
     """Carrega icone do arquivo icons/<name>.png, fallback para emoji."""
-    icon_path = ICONS_DIR / f"{name}.png"
-    if icon_path.is_file():
-        return QIcon(str(icon_path))
+    found = _find_icon_file(name)
+    if found:
+        return QIcon(str(found))
     return QIcon()
+
 
 def load_icon_pixmap(name: str, size: int = 24) -> QPixmap:
     """Carrega icone como QPixmap redimensionado, fallback vazio."""
-    icon_path = ICONS_DIR / f"{name}.png"
-    if icon_path.is_file():
-        pix = QPixmap(str(icon_path))
+    found = _find_icon_file(name)
+    if found:
+        pix = QPixmap(str(found))
         return pix.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatio,
                           Qt.TransformationMode.SmoothTransformation)
     return QPixmap()
 
 def icon_text(name: str) -> str:
     """Retorna texto com emoji (fallback) ou espaco reservado para icone."""
-    icon_path = ICONS_DIR / f"{name}.png"
-    if icon_path.is_file():
+    if _find_icon_file(name):
         return "  "
     return f"{ICON_FALLBACKS.get(name, '')} "
 
