@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from PyQt6.QtCore import Qt, QSettings, QSize, QTimer
 from PyQt6.QtGui import QAction, QFont, QIcon, QPixmap
 from PyQt6.QtWidgets import (
-    QAbstractSpinBox, QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
+    QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
     QMessageBox, QPushButton, QScrollArea, QSizePolicy,
     QSpinBox, QSplitter, QStatusBar, QTextEdit, QTreeWidget,
@@ -559,21 +559,12 @@ class ParameterWidget(QWidget):
             layout.addWidget(self._widget)
             layout.addStretch()
         elif isinstance(value, int):
-            self._widget = QSpinBox()
-            self._widget.setRange(-2147483648, 2147483647)
-            self._widget.setValue(int(value))
-            self._widget.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.PlusMinus)
-            self._widget.setFixedWidth(180)
+            self._widget = self._make_spin_box(int(value), is_float=False)
             self._widget.valueChanged.connect(self._emit_change)
             layout.addWidget(self._widget)
             layout.addStretch()
         elif isinstance(value, float):
-            self._widget = QDoubleSpinBox()
-            self._widget.setRange(-1e12, 1e12)
-            self._widget.setDecimals(4)
-            self._widget.setValue(float(value))
-            self._widget.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.PlusMinus)
-            self._widget.setFixedWidth(180)
+            self._widget = self._make_spin_box(float(value), is_float=True)
             self._widget.valueChanged.connect(self._emit_change)
             layout.addWidget(self._widget)
             layout.addStretch()
@@ -612,12 +603,56 @@ class ParameterWidget(QWidget):
             self._btn_del.clicked.connect(lambda: self._on_delete(self.key_path))
             layout.addWidget(self._btn_del)
 
+    def _make_spin_box(self, value, is_float=False):
+        """Cria widget numerico com botoes +/- visiveis."""
+        from PyQt6.QtCore import pyqtSignal
+        w = QWidget()
+        w.setFixedWidth(190)
+        layout = QHBoxLayout(w)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
+
+        entry = QLineEdit(str(value))
+        entry.setObjectName("spinValue")
+        entry.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        entry.setFixedHeight(28)
+        layout.addWidget(entry)
+
+        delta = 0.01 if is_float else 1
+
+        btn_dec = QPushButton("−")
+        btn_dec.setObjectName("spinBtn")
+        btn_dec.setFixedSize(28, 28)
+        btn_dec.clicked.connect(lambda: self._spin_adjust(entry, -delta, is_float, w))
+        layout.addWidget(btn_dec)
+
+        btn_inc = QPushButton("+")
+        btn_inc.setObjectName("spinBtn")
+        btn_inc.setFixedSize(28, 28)
+        btn_inc.clicked.connect(lambda: self._spin_adjust(entry, delta, is_float, w))
+        layout.addWidget(btn_inc)
+
+        w.valueChanged = pyqtSignal()
+        w.value = lambda: (float(entry.text()) if is_float else int(entry.text()))
+        w.setValue = lambda v: entry.setText(str(v))
+        w._is_spin_widget = True
+
+        return w
+
+    @staticmethod
+    def _spin_adjust(entry, delta, is_float, parent):
+        try:
+            cur = float(entry.text()) if is_float else int(entry.text())
+        except ValueError:
+            cur = 0
+        new = cur + delta
+        entry.setText(str(int(new) if not is_float else round(new, 4)))
+        parent.valueChanged.emit()
+
     def _emit_change(self) -> None:
         if isinstance(self._widget, QCheckBox):
             new_val = self._widget.isChecked()
-        elif isinstance(self._widget, QSpinBox):
-            new_val = self._widget.value()
-        elif isinstance(self._widget, QDoubleSpinBox):
+        elif hasattr(self._widget, "_is_spin_widget"):
             new_val = self._widget.value()
         elif isinstance(self._widget, QTextEdit):
             new_val = self._widget.toPlainText()

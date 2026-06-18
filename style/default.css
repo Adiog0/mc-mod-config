@@ -104,20 +104,35 @@ QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
     border-color: #d4a855;
 }
 
-QSpinBox::up-button, QSpinBox::down-button,
-QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+/* Botoes +/- customizados para campos numericos */
+QPushButton#spinBtn {
     background-color: #4a4543;
     color: #e8e6e3;
-    border: none;
-    border-radius: 3px;
-    width: 22px;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 15px;
+    padding: 0px;
+    border: none;
+    border-radius: 4px;
 }
-QSpinBox::up-button:hover, QSpinBox::down-button:hover,
-QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {
+QPushButton#spinBtn:hover {
     background-color: #5c5654;
     color: #d4a855;
+}
+QPushButton#spinBtn:pressed {
+    background-color: #3a3535;
+}
+
+/* Campo de valor do spin customizado */
+QLineEdit#spinValue {
+    background-color: #1c1a19;
+    color: #e8e6e3;
+    border: 1px solid #3e3a39;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 13px;
+}
+QLineEdit#spinValue:focus {
+    border-color: #d4a855;
 }
 
 
