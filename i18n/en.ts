@@ -271,9 +271,9 @@
     <message>
         <location filename="../mc-config-editor-qt.py" line="1295" />
         <source>O idioma foi alterado para %1.
-Reinicie o aplicativo para aplicar a mudanca.</source>
+O aplicativo sera reiniciado automaticamente.</source>
         <translation>The language has been changed to %1.
-Restart the application to apply the change.</translation>
+The application will restart automatically.</translation>
     </message>
     <message>
         <location filename="../mc-config-editor-qt.py" line="1310" />

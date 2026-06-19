@@ -1285,7 +1285,6 @@ class MainWindow(QMainWindow):
         self.status.showMessage(icon_text("check") + " " + self.tr("CSS padrao restaurado"))
 
     def _set_language(self, lang: str) -> None:
-        """Save language preference and prompt restart."""
         data = load_settings()
         data["language"] = lang
         save_settings(data)
@@ -1293,10 +1292,15 @@ class MainWindow(QMainWindow):
             self,
             self.tr("Idioma alterado"),
             self.tr("O idioma foi alterado para %1.\n"
-               "Reinicie o aplicativo para aplicar a mudanca.").replace("%1",
+               "O aplicativo sera reiniciado automaticamente.").replace("%1",
                 {"pt_BR": self.tr("Portugues"), "en": "English", "es": self.tr("Espanol")}[lang]
             ),
         )
+        if hasattr(os, "execv"):
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+        else:
+            subprocess.Popen([sys.executable] + sys.argv)
+            QApplication.quit()
 
     # ── Instance loading ─────────────────────────────────────────────
 

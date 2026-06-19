@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1">
 <context>
     <name>EditorPanel</name>
@@ -272,7 +271,7 @@
     <message>
         <location filename="../mc-config-editor-qt.py" line="1295" />
         <source>O idioma foi alterado para %1.
-Reinicie o aplicativo para aplicar a mudanca.</source>
+O aplicativo sera reiniciado automaticamente.</source>
         <translation type="unfinished" />
     </message>
     <message>
