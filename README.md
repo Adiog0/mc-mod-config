@@ -179,11 +179,11 @@ mc-mod-config/
 | `.json` | Visual (campos tipados) | ❌ |
 | `.json5` | Visual (campos tipados) | ❌ |
 | `.yaml` / `.yml` | Visual (campos tipados) | ✅ Sim |
-| `.cfg` | Raw (editor de texto) | ✅ Sim |
-| `.properties` | Raw (editor de texto) | ✅ Sim |
-| `.txt` | Raw (editor de texto) | ✅ Sim |
-| `.snbt` | Raw (editor de texto) | ✅ Sim |
-| `.ini` | Raw (editor de texto) | ✅ Sim |
+| `.cfg` | Visual (campos tipados) | ❌ |
+| `.properties` | Visual (campos tipados) | ❌ |
+| `.txt` | Visual (campos tipados) | ❌ |
+| `.snbt` | Visual (editor de texto) | ❌ |
+| `.ini` | Visual (campos tipados) | ❌ |
 
 ---
 

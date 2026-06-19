@@ -161,11 +161,11 @@ mc-mod-config/
 | `.json` | Visual (typed fields) | ❌ |
 | `.json5` | Visual (typed fields) | ❌ |
 | `.yaml` / `.yml` | Visual (typed fields) | ✅ Yes |
-| `.cfg` | Raw (text editor) | ✅ Yes |
-| `.properties` | Raw (text editor) | ✅ Yes |
-| `.txt` | Raw (text editor) | ✅ Yes |
-| `.snbt` | Raw (text editor) | ✅ Yes |
-| `.ini` | Raw (text editor) | ✅ Yes |
+| `.cfg` | Visual (typed fields) | ❌ |
+| `.properties` | Visual (typed fields) | ❌ |
+| `.txt` | Visual (typed fields) | ❌ |
+| `.snbt` | Visual (text editor) | ❌ |
+| `.ini` | Visual (typed fields) | ❌ |
 
 ---
 
