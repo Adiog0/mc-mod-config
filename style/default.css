@@ -91,17 +91,18 @@ QLabel#iconFallback {
 
 /* ── 3. Inputs ──────────────────────────────────────────────────────── */
 QLineEdit, QSpinBox, QDoubleSpinBox {
-    background-color: #1c1a19;
+    background-color: #0f0d0c;
     color: #e8e6e3;
-    border: 1px solid #3e3a39;
+    border: 2px solid #3e3a39;
     border-radius: 4px;
     padding: 7px 10px;
     selection-background-color: #d4a855;
-    selection-color: #1c1a19;
+    selection-color: #0f0d0c;
 }
 
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
     border-color: #d4a855;
+    background-color: #12100f;
 }
 
 /* Botoes +/- customizados para campos numericos */
@@ -124,15 +125,16 @@ QPushButton#spinBtn:pressed {
 
 /* Campo de valor do spin customizado */
 QLineEdit#spinValue {
-    background-color: #1c1a19;
+    background-color: #0f0d0c;
     color: #e8e6e3;
-    border: 1px solid #3e3a39;
+    border: 2px solid #3e3a39;
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 13px;
 }
 QLineEdit#spinValue:focus {
     border-color: #d4a855;
+    background-color: #12100f;
 }
 
 
@@ -311,9 +313,9 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 
 /* ── 8. Editor Raw ──────────────────────────────────────────────────── */
 QTextEdit#rawEditor {
-    background-color: #1c1a19;
+    background-color: #0f0d0c;
     color: #e8e6e3;
-    border: 1px solid #383433;
+    border: 2px solid #3e3a39;
     border-radius: 4px;
     font-family: "Courier New", monospace;
     font-size: 13px;
@@ -377,9 +379,9 @@ QDialog#addParamDialog {
 }
 
 QDialog#addParamDialog QLineEdit {
-    background-color: #1c1a19;
+    background-color: #0f0d0c;
     color: #e8e6e3;
-    border: 1px solid #383433;
+    border: 2px solid #3e3a39;
     border-radius: 4px;
     padding: 6px 10px;
 }
