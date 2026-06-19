@@ -40,16 +40,44 @@ Funciona con cualquier instancia de Minecraft (vanilla, Forge, Fabric, PrismLaun
 
 ---
 
+## ⬇️ Descarga rápida (standalone)
+
+Descargue el ejecutable listo para su sistema — **no necesita Python ni pip**.
+
+👉 **[GitHub Releases](https://github.com/Adiog0/mc-mod-config/releases)**
+
+| Sistema | Archivo |
+|---|---|
+| 🐧 Linux | `mc-config-editor` |
+| 🪟 Windows | `mc-config-editor.exe` |
+| 🍎 macOS | `mc-config-editor-macos` |
+
+> **Linux**: otorgue permiso de ejecución — `chmod +x mc-config-editor`  
+> **macOS**: después de descargar, ejecute `xattr -cr mc-config-editor-macos` (Gatekeeper)
+
+---
+
 ## 🚀 Cómo usar
 
-### Linux / macOS
+### Standalone (recomendado)
+```bash
+./mc-config-editor                        # selector de instancia
+./mc-config-editor -i "ruta/instancia"    # directo
+```
+En Windows, renombre `mc-config-editor.exe` o ejecútelo directamente:
+```cmd
+mc-config-editor.exe
+mc-config-editor.exe -i "C:\ruta\instancia"
+```
+
+### Linux / macOS (código fuente)
 ```bash
 cd mc-mod-config
 ./mc-config-editor                        # selector de instancia
 ./mc-config-editor -i "ruta/instancia"    # directo
 ```
 
-### Windows
+### Windows (código fuente)
 ```cmd
 cd mc-mod-config
 mc-config-editor.bat                      # selector de instancia
@@ -79,6 +107,31 @@ Instalación única:
 ```bash
 pip install PyQt6 tomlkit pyjson5 pyyaml
 ```
+
+---
+
+## 🔧 Compilar desde el código fuente
+
+Para generar su propio ejecutable standalone:
+
+```bash
+# Instalar dependencias de compilación
+pip install pyinstaller PyQt6 tomlkit pyjson5 pyyaml
+
+# Compilar
+./build/build.sh            # Linux/macOS
+build\build.bat             # Windows
+
+# O directamente con PyInstaller:
+pyinstaller build/build.spec
+```
+
+> El ejecutable se genera en `dist/mc-config-editor` (o `.exe` en Windows).  
+> El binario ya incluye íconos, CSS, traducciones (.qm) y todas las dependencias Python — **cero instalación extra**.
+
+### Compilación automatizada (CI/CD)
+
+Al crear una **release** en GitHub (`v*.*.*`), un workflow de GitHub Actions compila automáticamente para Linux, Windows y macOS y adjunta los binarios a la release.
 
 ---
 
@@ -137,6 +190,10 @@ mc-mod-config/
 ├── mc-config-editor.bat      ← lanzador Windows
 ├── mc-config-editor.py       ← punto de entrada
 ├── mc-config-editor-qt.py    ← aplicación principal (PyQt6)
+├── build/                    ← configuración de compilación PyInstaller
+│   ├── build.spec            ←   spec de PyInstaller
+│   ├── build.sh              ←   script de compilación Linux/macOS
+│   └── build.bat             ←   script de compilación Windows
 ├── i18n/                     ← archivos de traducción (.ts / .qm)
 ├── icons/                    ← íconos PNG
 ├── style/                    ← temas CSS

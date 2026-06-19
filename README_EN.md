@@ -40,16 +40,44 @@ Works with any Minecraft instance (vanilla, Forge, Fabric, PrismLauncher, ElyPri
 
 ---
 
+## ⬇️ Quick download (standalone)
+
+Download the ready-to-run executable for your system — **no Python or pip needed**.
+
+👉 **[GitHub Releases](https://github.com/Adiog0/mc-mod-config/releases)**
+
+| System | File |
+|---|---|
+| 🐧 Linux | `mc-config-editor` |
+| 🪟 Windows | `mc-config-editor.exe` |
+| 🍎 macOS | `mc-config-editor-macos` |
+
+> **Linux**: give execute permission — `chmod +x mc-config-editor`  
+> **macOS**: after downloading, run `xattr -cr mc-config-editor-macos` (Gatekeeper)
+
+---
+
 ## 🚀 How to use
 
-### Linux / macOS
+### Standalone (recommended)
+```bash
+./mc-config-editor                        # instance selector
+./mc-config-editor -i "path/to/instance"  # direct
+```
+On Windows, rename `mc-config-editor.exe` or run directly:
+```cmd
+mc-config-editor.exe
+mc-config-editor.exe -i "C:\path\to\instance"
+```
+
+### Linux / macOS (source)
 ```bash
 cd mc-mod-config
 ./mc-config-editor                        # instance selector
 ./mc-config-editor -i "path/to/instance"  # direct
 ```
 
-### Windows
+### Windows (source)
 ```cmd
 cd mc-mod-config
 mc-config-editor.bat                      # instance selector
@@ -79,6 +107,31 @@ One-time installation:
 ```bash
 pip install PyQt6 tomlkit pyjson5 pyyaml
 ```
+
+---
+
+## 🔧 Build from source
+
+To generate your own standalone executable:
+
+```bash
+# Install build dependencies
+pip install pyinstaller PyQt6 tomlkit pyjson5 pyyaml
+
+# Build
+./build/build.sh            # Linux/macOS
+build\build.bat             # Windows
+
+# Or directly with PyInstaller:
+pyinstaller build/build.spec
+```
+
+> The executable is placed in `dist/mc-config-editor` (or `.exe` on Windows).  
+> The binary already includes icons, CSS, translations (.qm) and all Python dependencies — **zero extra installation**.
+
+### Automated build (CI/CD)
+
+When creating a **release** on GitHub (`v*.*.*`), a GitHub Actions workflow automatically compiles for Linux, Windows, and macOS and attaches the binaries to the release.
 
 ---
 
@@ -137,6 +190,10 @@ mc-mod-config/
 ├── mc-config-editor.bat      ← Windows launcher
 ├── mc-config-editor.py       ← entry point
 ├── mc-config-editor-qt.py    ← main application (PyQt6)
+├── build/                    ← PyInstaller build config
+│   ├── build.spec            ←   PyInstaller spec
+│   ├── build.sh              ←   Linux/macOS build script
+│   └── build.bat             ←   Windows build script
 ├── i18n/                     ← translation files (.ts / .qm)
 ├── icons/                    ← PNG icons
 ├── style/                    ← CSS themes

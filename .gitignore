@@ -8,8 +8,17 @@ __pycache__/
 *.pyo
 *.egg-info/
 dist/
-build/
 *.egg
+
+# Build artifacts (PyInstaller intermediate files)
+build/*
+# Track build configuration files
+!build/build.spec
+!build/build.sh
+!build/build.bat
+!build/generate-icns.sh
+!build/mc-config-editor.ico
+!build/icon.icns
 
 # Virtualenv
 venv/
