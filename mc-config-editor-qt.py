@@ -1517,9 +1517,9 @@ class MainWindow(QMainWindow):
             ),
         )
         if hasattr(os, "execv"):
-            os.execv(sys.executable, [sys.executable] + sys.argv)
+            os.execv(sys.executable, [sys.executable] + sys.argv[1:])
         else:
-            subprocess.Popen([sys.executable] + sys.argv)
+            subprocess.Popen([sys.executable] + sys.argv[1:])
             QApplication.quit()
 
     def _check_for_updates(self) -> None:
