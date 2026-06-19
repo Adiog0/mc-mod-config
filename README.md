@@ -10,6 +10,22 @@ Suporta instâncias do **PrismLauncher** / **ElyPrismLauncher** em Windows, Linu
 
 ---
 
+## 📸 Screenshots
+
+<details open>
+<summary><b>Clique para expandir/colapsar</b></summary>
+<br>
+<img src="Screenshots/interface_1.png" alt="Tela principal" width="800">
+<br><br>
+<img src="Screenshots/interface_2.png" alt="Editor de parametros" width="800">
+<br><br>
+<img src="Screenshots/interface_3.png" alt="Selecao de mods" width="800">
+<br><br>
+<img src="Screenshots/interface_4.png" alt="Editor raw e visual" width="800">
+</details>
+
+---
+
 ## 📋 Funcionalidades
 
 - **Editor visual** com cards estilizados para cada parâmetro (TOML, JSON, JSON5, YAML)
