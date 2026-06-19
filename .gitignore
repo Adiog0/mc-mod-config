@@ -1,0 +1,40 @@
+# Logs — nunca subir
+logs/
+*.log
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtualenv
+venv/
+.venv/
+env/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# App-specific — nunca subir
+*.bak
+*.backup
+
+# Configuracoes do usuario (locais, privadas)
+settings.json
+style/custom.css
+
+# Dados de teste
+*_test_*
+*.test_*
