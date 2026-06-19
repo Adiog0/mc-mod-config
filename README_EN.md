@@ -1,7 +1,7 @@
 # ⛏ Minecraft Mod Config Editor — by Makalove
 
 Cross-platform visual editor for Minecraft mod configuration files.  
-Supports **PrismLauncher** / **ElyPrismLauncher** instances on Windows, Linux and macOS.
+Works with any Minecraft instance (vanilla, Forge, Fabric, PrismLauncher, ElyPrismLauncher and other launchers).
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Platform: Cross-platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
@@ -166,6 +166,15 @@ mc-mod-config/
 | `.txt` | Raw (text editor) | ✅ Yes |
 | `.snbt` | Raw (text editor) | ✅ Yes |
 | `.ini` | Raw (text editor) | ✅ Yes |
+
+---
+
+## 📝 Notes
+
+- The app has been tested with vanilla Minecraft, Forge, Fabric, **PrismLauncher** and **ElyPrismLauncher**
+- The expected directory structure is: `instance/minecraft/config/`
+- Backups are created as `file.bak.YYYYMMDD_HHMMSS` in the same directory
+- For development, use the `hml` branch (staging). The `main` branch is production
 
 ---
 
