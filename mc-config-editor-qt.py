@@ -1280,7 +1280,7 @@ class MainWindow(QMainWindow):
         self.editor_header.setVisible(False)
 
         # Mostra label da instancia atual
-        self.instance_label.setText(f"{icon_text("castle")}Voce esta editando: {inst_name}")
+        self.instance_label.setText(f"{icon_text("castle")}Voce esta editando a instância: {inst_name}")
         self.instance_label.setVisible(True)
 
         # Desabilita botoes
