@@ -1175,13 +1175,15 @@ class MainWindow(QMainWindow):
         self.btn_backup = QPushButton(" Backup")
         self.btn_backup.setObjectName("btnBackup")
         self.btn_backup.setEnabled(False)
+        self.btn_backup.setToolTip("Cria uma copia de seguranca apenas deste arquivo (nao de todos os mods)")
         self.btn_backup.clicked.connect(self._backup_current)
         icon_button(self.btn_backup, "save")
         btn_layout.addWidget(self.btn_backup)
 
-        self.btn_cancel = QPushButton(" Cancelar")
+        self.btn_cancel = QPushButton(" Desfazer")
         self.btn_cancel.setObjectName("btnCancelar")
         self.btn_cancel.setEnabled(False)
+        self.btn_cancel.setToolTip("Desfaz a ultima alteracao e recarrega o arquivo original")
         self.btn_cancel.clicked.connect(self._cancel_changes)
         icon_button(self.btn_cancel, "undo")
         btn_layout.addWidget(self.btn_cancel)
@@ -1189,6 +1191,7 @@ class MainWindow(QMainWindow):
         self.btn_save = QPushButton(" Salvar")
         self.btn_save.setObjectName("btnSalvar")
         self.btn_save.setEnabled(False)
+        self.btn_save.setToolTip("Salva as alteracoes no arquivo de configuracao (backup automatico antes)")
         self.btn_save.clicked.connect(self._save_current)
         icon_button(self.btn_save, "save")
         btn_layout.addWidget(self.btn_save)
@@ -1392,7 +1395,7 @@ class MainWindow(QMainWindow):
         self._current_file.parse()
         self.editor.reload()
         self._update_buttons()
-        self.status.showMessage(f"{icon_text('undo')} Alteracoes descartadas.")
+        self.status.showMessage(f"{icon_text('undo')} Alteracoes desfeitas. Arquivo original recarregado.")
 
     def _save_current(self) -> None:
         if not self._current_file:
