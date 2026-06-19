@@ -573,14 +573,12 @@ class ParameterWidget(QFrame):
         self._on_delete = on_delete
         self._old_value = value
 
-        # Card frame
         self.setObjectName("paramCard")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
 
-        # Header row: name + type
         header = QHBoxLayout()
         header.setSpacing(8)
 
@@ -618,7 +616,6 @@ class ParameterWidget(QFrame):
 
         layout.addLayout(header)
 
-        # Input row
         input_row = QHBoxLayout()
         input_row.setSpacing(8)
 
@@ -737,12 +734,10 @@ class EditorPanel(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # Tabs: Visual | Raw
         self._tabs = QTabWidget()
         self._tabs.setObjectName("editorTabs")
         self._layout.addWidget(self._tabs)
 
-        # Tab 1: Visual editor
         self._visual_tab = QWidget()
         visual_layout = QVBoxLayout(self._visual_tab)
         visual_layout.setContentsMargins(0, 0, 0, 0)
@@ -757,7 +752,6 @@ class EditorPanel(QWidget):
         visual_layout.addWidget(self._scroll)
         self._tabs.addTab(self._visual_tab, "📋 Visual")
 
-        # Tab 2: Raw editor
         self._raw_tab = QWidget()
         raw_layout = QVBoxLayout(self._raw_tab)
         raw_layout.setContentsMargins(0, 0, 0, 0)
@@ -1418,7 +1412,7 @@ class MainWindow(QMainWindow):
             "Multiplataforma: Windows, Linux, macOS\n"
             "Temas customizaveis via CSS (QSS)\n"
             "Icones PNG com fallback para emoji\n\n"
-            "github.com/makalove/mc-mod-config"
+            "github.com/Adiog0/mc-config-editor"
         )
 
     def closeEvent(self, event) -> None:
