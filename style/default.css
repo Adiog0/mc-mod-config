@@ -46,7 +46,7 @@ QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QLineEdit#paramInput, QLineEdit#
     border-top: 2px solid #1a1816; border-left: 2px solid #1a1816;
     border-right: 2px solid #5a5650; border-bottom: 2px solid #5a5650;
     border-radius: 3px;
-    padding: 8px; font-family: "Minecraftia", "Monocraft", "Courier New", monospace;
+    padding: 6px 8px; font-family: "Minecraftia", "Monocraft", "Courier New", monospace;
     font-size: 13px; selection-background-color: #7a9a6a;
 }
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
