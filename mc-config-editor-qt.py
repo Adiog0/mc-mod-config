@@ -641,11 +641,13 @@ class ParameterWidget(QFrame):
                 self._widget.setPlainText(str(value))
                 self._widget.setObjectName("paramTextArea")
                 self._widget.setFixedHeight(80)
+                self._widget.setStyleSheet("color: #e0ddd8;")
                 self._widget.textChanged.connect(lambda: self._emit_change())
             else:
                 self._widget = QLineEdit(str(value))
                 self._widget.setObjectName("paramInput")
                 self._widget.setMinimumHeight(32)
+                self._widget.setStyleSheet("color: #e0ddd8;")
                 self._widget.textChanged.connect(lambda txt: self._emit_change())
             input_row.addWidget(self._widget)
         elif isinstance(value, list):
@@ -653,12 +655,14 @@ class ParameterWidget(QFrame):
             self._widget.setPlainText("\n".join(str(v) for v in value))
             self._widget.setObjectName("paramTextArea")
             self._widget.setFixedHeight(80)
+            self._widget.setStyleSheet("color: #e0ddd8;")
             self._widget.textChanged.connect(lambda: self._emit_change())
             input_row.addWidget(self._widget)
         else:
             self._widget = QLineEdit(str(value) if value is not None else "")
             self._widget.setObjectName("paramInput")
             self._widget.setMinimumHeight(32)
+            self._widget.setStyleSheet("color: #e0ddd8;")
             self._widget.textChanged.connect(lambda txt: self._emit_change())
             input_row.addWidget(self._widget)
 
@@ -673,6 +677,7 @@ class ParameterWidget(QFrame):
 
         entry = QLineEdit(str(value))
         entry.setObjectName("spinValue")
+        entry.setStyleSheet("color: #e0ddd8;")
         entry.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         entry.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         entry.setMinimumHeight(28)
