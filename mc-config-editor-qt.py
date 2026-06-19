@@ -560,7 +560,7 @@ class ToggleSwitch(QWidget):
         self._callback = fn
 
 
-class ParameterWidget(QWidget):
+class ParameterWidget(QFrame):
     """Widget que representa um parametro unico no editor."""
 
     def __init__(self, key: str, value: Any, key_path: List[str],
@@ -666,7 +666,7 @@ class ParameterWidget(QWidget):
     def _make_spin_box(self, value, is_float=False):
         """Cria widget numerico com botoes +/- visiveis."""
         w = QWidget()
-        w.setFixedWidth(190)
+        w.setFixedWidth(240)
         layout = QHBoxLayout(w)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(2)
