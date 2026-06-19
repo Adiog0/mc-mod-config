@@ -4,8 +4,13 @@
    ========================================================================= */
 
 /* ── 1. Base ────────────────────────────────────────────────────────── */
-QWidget {
+QMainWindow, QDialog, QMenu, QWidget#treePanel, QWidget#editorPanel,
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader,
+QStatusBar#appStatusBar, QMenuBar, QScrollArea, QDialog#addParamDialog {
     background-color: #262322;
+}
+
+QWidget {
     color: #e8e6e3;
     font-family: "Minecraftia", "Courier New", monospace;
     font-size: 13px;
