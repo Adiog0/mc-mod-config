@@ -21,13 +21,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # PyQt6
 from PyQt6.QtCore import Qt, QSettings, QSize, QTimer
-from PyQt6.QtGui import QAction, QFont, QIcon, QPixmap
+from PyQt6.QtGui import QAction, QIcon, QPixmap
 from PyQt6.QtWidgets import (
-    QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
+    QApplication, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
     QMessageBox, QPushButton, QScrollArea, QSizePolicy,
-    QSpinBox, QSplitter, QStatusBar, QTabWidget, QTextEdit, QTreeWidget,
-    QTreeWidgetItem, QVBoxLayout, QWidget, QDoubleSpinBox,
+    QSplitter, QStatusBar, QTabWidget, QTextEdit, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget,
 )
 
 # ── Logging ─────────────────────────────────────────────────────────────

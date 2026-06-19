@@ -6,21 +6,24 @@ Suporta instâncias do **PrismLauncher** / **ElyPrismLauncher** em Windows, Linu
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Platform: Cross-platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
 ![Python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+![UI: PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
 
 ---
 
 ## 📋 Funcionalidades
 
-- **Editor visual** para arquivos TOML, JSON, JSON5 e YAML
-- **Editor raw** para formatos legados (CFG, Properties, TXT, SNBT, INI)
-- **Árvore expansível** de mods → arquivos → parâmetros
-- **Seções recolhíveis** com indicador ▶/▼ para navegação limpa
-- **Adicionar/remover parâmetros** via interface (sem editar o arquivo manualmente)
+- **Editor visual** com cards estilizados para cada parâmetro (TOML, JSON, JSON5, YAML)
+- **Editor Raw** com abas `Visual | Raw` para formatos legados (CFG, Properties, TXT, SNBT, INI)
+- **Toggle Switch** customizado para booleanos (substitui checkbox)
+- **Campos numéricos** com botões +/− visíveis
+- **Árvore expansível** de mods → arquivos com seleção destacada
+- **Seções recolhíveis** com indicador ▶/▼ e hint `[Clique para expandir]`
+- **Adicionar/remover parâmetros** via interface
 - **Backup automático** com timestamp antes de cada salvamento
 - **Última instância lembrada** — reabre onde você parou
 - **100% customizável via CSS** — edite `style/default.css` ou crie `style/custom.css`
-- **Ícones PNG** com fallback automático para emoji
-- **Detecção automática de dependências** — instala o que faltar com um clique
+- **Ícones PNG** (30×30) com fallback automático para emoji
+- **Instalação automática de dependências** ao abrir o app
 
 ---
 
@@ -144,16 +147,16 @@ mc-mod-config/
 ├── mc-config-editor          ← launcher Linux/macOS
 ├── mc-config-editor-qt       ← launcher alternativo
 ├── mc-config-editor.bat      ← launcher Windows
-├── mc-config-editor.py       ← entry point (wrapper)
-├── mc-config-editor-qt.py    ← aplicação principal (PyQt6)
-├── README.md                 ← esta documentação
+├── mc-config-editor.py       ← entry point (wrapper + auto-install deps)
+├── mc-config-editor-qt.py    ← aplicacao principal (PyQt6)
+├── README.md                 ← esta documentacao
 ├── .gitignore
-├── icons/                    ← ícones PNG (opcionais)
-│   └── README.txt            ← referência dos ícones
+├── icons/                    ← icones PNG (opcionais)
+│   └── README.txt            ← referencia dos icones
 ├── style/
-│   ├── default.css           ← tema padrão
-│   └── example.css           ← template documentado
-└── logs/                     ← logs de execução (gitignored)
+│   ├── default.css           ← tema padrao (pastel)
+│   └── example.css           ← template documentado + paletas alternativas
+└── logs/                     ← logs de execucao (gitignored)
 ```
 
 ---
