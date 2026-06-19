@@ -1,0 +1,196 @@
+/* =========================================================================
+ M inecraft Mod Config Editor — High Contrast (Accessibility Template)                                          *
+ Tema atual: Alto Contraste para Deficiência Visual (Normas WCAG AAA)
+ ========================================================================= */
+
+/* Paleta de Acessibilidade:
+ F undo geral:     #000000 (Preto absoluto para máximo contraste)                                               *
+ Texto padrão:    #FFFFFF (Branco puro)
+ Destaque/Foco:   #FFFF00 (Amarelo puro - alta visibilidade)
+ Avisos/Erros:    #FF3333 (Vermelho vivo)
+ Sucesso/Salvar:  #00FF00 (Verde limão elétrico)
+ Bordas:          Contornos grossos (2px a 3px) para delimitação clara
+ */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 1 . BASE E TEXTO (Preto e Branco Puro)                                                                         *
+ ════════════════════════════════════════════════════════════════════════ */
+QMainWindow, QDialog, QMenu, QWidget#treePanel, QWidget#editorPanel,
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader,
+QStatusBar#appStatusBar, QMenuBar, QScrollArea, QDialog#addParamDialog {
+    background-color: #000000;
+}
+QWidget {
+    color: #FFFFFF;
+    font-family: monospace; /* Fontes mono ajudam na distinção de caracteres */
+    font-size: 14px; /* Tamanho ligeiramente aumentado para facilitar a leitura */
+    font-weight: bold;
+}
+QMainWindow {
+    background-color: #000000;
+}
+QWidget#treePanel, QWidget#editorPanel {
+    background-color: #000000;
+    border: 3px solid #FFFFFF; /* Divisão de painéis extremamente visível */
+}
+QSplitter#mainSplitter::handle {
+    background-color: #FFFFFF;
+    width: 8px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 2 . CABECALHOS (Delimitação Forte)                                                                             *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader {
+    background-color: #000000;
+    color: #FFFF00; /* Texto amarelo para chamar atenção imediata */
+    font-size: 16px;
+    padding: 12px;
+    border-bottom: 3px solid #FFFFFF;
+}
+QLabel#sectionHeader {
+    background-color: #000000;
+    color: #00FFFF; /* Ciano para cabeçalhos secundários */
+    padding: 8px;
+    border: 2px solid #00FFFF;
+}
+QLabel#editorPlaceholder { color: #FFFFFF; font-size: 16px; }
+QLabel#editorError { color: #FF3333; font-size: 16px; border: 2px solid #FF3333; padding: 5px; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 3 . CARDS DE PARAMETRO (Caixas Delimitadas)                                                                    *
+ ════════════════════════════════════════════════════════════════════════ */
+QFrame#paramCard {
+    background-color: #000000;
+    border: 2px solid #FFFFFF;
+    border-radius: 0px; /* Formas retas são mais fáceis de rastrear visualmente */
+    padding: 12px;
+    margin-bottom: 4px;
+}
+QFrame#paramCard:hover {
+    border: 3px solid #FFFF00; /* Destaca a linha inteira ao passar o mouse */
+}
+QLabel#paramName { color: #FFFFFF; font-size: 14px; }
+QLabel#paramType { color: #00FFFF; font-size: 12px; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 4 . INPUTS (Fundo Preto com Texto Branco e Borda Grossa)                                                       *
+ ════════════════════════════════════════════════════════════════════════ */
+QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QLineEdit#paramInput, QLineEdit#spinValue {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 2px solid #FFFFFF;
+    border-radius: 0px;
+    padding: 8px;
+    font-size: 14px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
+    border: 3px solid #FFFF00; /* Borda amarela grossa indica onde está o cursor */
+    color: #FFFF00;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 5 . TOGGLE SWITCH (Acessibilidade Pragmática)                                                                  *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#toggleSwitch { background: transparent; }
+QWidget#toggleTrack { border: 2px solid #FFFFFF; }
+QWidget#toggleTrack[checked="false"] { background-color: #000000; }
+QWidget#toggleTrack[checked="true"] { background-color: #00FF00; } /* Verde elétrico gritante */
+QWidget#toggleKnob { background-color: #FFFFFF; border: 1px solid #000000; }
+QWidget#toggleKnob[checked="true"] { background-color: #000000; border: 2px solid #FFFFFF; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 6 . BOTOES (Texto Branco no Preto com Bordas Grossas Reversíveis)                                              *
+ ════════════════════════════════════════════════════════════════════════ */
+QPushButton {
+    background-color: #000000;
+    color: #FFFFFF;
+    padding: 10px 20px;
+    border: 2px solid #FFFFFF;
+    border-radius: 0px;
+}
+QPushButton:hover {
+    background-color: #FFFFFF;
+    color: #000000; /* Inversão completa de cores no hover */
+}
+QPushButton:focus {
+    border: 3px solid #FFFF00; /* Feedback crucial para navegação por Tabulação (Teclado) */
+}
+
+/* Botões de Ação com Cores de Sinalização Puras */
+QPushButton#btnSalvar { border: 2px solid #00FF00; color: #00FF00; }
+QPushButton#btnSalvar:hover { background-color: #00FF00; color: #000000; }
+
+QPushButton#btnBackup { border: 2px solid #00FFFF; color: #00FFFF; }
+QPushButton#btnBackup:hover { background-color: #00FFFF; color: #000000; }
+
+QPushButton#btnBrowse { border: 2px solid #FFFF00; color: #FFFF00; }
+QPushButton#btnBrowse:hover { background-color: #FFFF00; color: #000000; }
+
+QPushButton#btnCancelar { border: 2px solid #FF3333; color: #FF3333; }
+QPushButton#btnCancelar:hover { background-color: #FF3333; color: #000000; }
+
+QPushButton#btnAddParam { border: 2px solid #00FF00; color: #00FF00; min-height: 35px; }
+QPushButton#btnDeleteParam { border: 2px solid #FF3333; color: #FF3333; min-width: 30px; max-width: 30px; min-height: 30px; max-height: 30px; }
+QPushButton#spinBtn { border: 2px solid #FFFFFF; color: #FFFFFF; min-width: 28px; max-width: 28px; min-height: 28px; max-height: 28px; }
+
+QPushButton#sectionToggle { background-color: #000000; color: #00FFFF; text-align: left; padding: 10px; border: 2px solid #FFFFFF; }
+QPushButton#sectionToggle:focus { border: 2px solid #FFFF00; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 7 . TABS | ARVORE | SCROLL | RAW | STATUS (Contornos Absolutos)                                                *
+ ════════════════════════════════════════════════════════════════════════ */
+QTabWidget#editorTabs::pane {
+    background-color: #000000;
+    border: 2px solid #FFFFFF;
+}
+QTabBar::tab {
+    background-color: #000000;
+    color: #FFFFFF;
+    padding: 10px 20px;
+    border: 2px solid #FFFFFF;
+    margin-right: 5px;
+}
+QTabBar::tab:selected {
+    background-color: #FFFFFF;
+    color: #000000;
+    font-weight: bold;
+}
+
+QCheckBox::indicator:unchecked { background-color: #000000; border: 2px solid #FFFFFF; }
+QCheckBox::indicator:checked { background-color: #00FF00; border: 2px solid #FFFFFF; }
+
+/* Árvore de Arquivos à Esquerda */
+QTreeWidget#modTree {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: none;
+}
+QTreeWidget#modTree::item { padding: 8px; border-bottom: 1px dashed #333333; }
+QTreeWidget#modTree::item:hover { background-color: #222222; color: #FFFF00; }
+QTreeWidget#modTree::item:selected {
+    background-color: #FFFF00;
+    color: #000000;
+    border: 2px solid #FFFFFF;
+}
+QHeaderView::section { background-color: #000000; color: #FFFF00; padding: 8px; border: 2px solid #FFFFFF; }
+
+QScrollArea { border: none; }
+QScrollBar:vertical { background-color: #000000; width: 16px; /* Mais larga para facilitar o clique */ }
+QScrollBar::handle:vertical { background-color: #FFFFFF; border: 1px solid #000000; min-height: 30px; }
+
+QTextEdit#rawEditor { background-color: #000000; color: #00FF00; padding: 12px; font-size: 14px; }
+QStatusBar#appStatusBar { background-color: #000000; color: #00FFFF; border-top: 2px solid #FFFFFF; padding: 5px; }
+QMenuBar { background-color: #000000; color: #FFFFFF; border-bottom: 2px solid #FFFFFF; }
+QMenuBar::item:selected { background-color: #FFFF00; color: #000000; }
+QMenu { background-color: #000000; color: #FFFFFF; border: 2px solid #FFFFFF; }
+QMenu::item:selected { background-color: #FFFF00; color: #000000; }
+
+QToolTip { background-color: #000000; color: #FFFF00; border: 3px solid #FFFF00; padding: 8px; font-size: 14px; }

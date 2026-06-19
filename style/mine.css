@@ -1,0 +1,216 @@
+/* =========================================================================
+ M inecraft Mod Config Editor — Vanilla GUI Template                                                                                             *
+ Tema atual: Interface Oficial do Minecraft (Retro/Pixel 3D)
+ ========================================================================= */
+
+/* Paleta de Cores (Fidelidade ao Jogo):
+ F undo geral:     #2c2c2c (Cinza escuro clássico dos menus de opções)                                                                           *
+ Fundo principal: #121212 (Fundo de terra escurecido / Tela de carregamento)
+ Paineis:         #3c3c3c (Cinza médio da interface)
+ Cabecalhos:      #4c4c4c com texto #ffff55 (Amarelo de texto do Minecraft)
+ Cards:           #8b8b8b com bordas pixeladas 3D marcantes
+ Inputs:          #000000 com texto #ffffff
+ Toggle ON:       #55ff55 (Verde brilhante de comandos)
+ Destaque:        #ffff55 (Amarelo Ouro)
+ Sucesso/Salvar:  #55ff55 (Verde Lime)
+ Backup/Azul:     #55ffff (Ciano de Diamante)
+ Browse/Laranja:  #ffaa00 (Laranja de Ouro/Fogo)
+ Cancel/Vermelho: #ff5555 (Vermelho de Redstone/Dano)
+ Selecao tree:    Borda branca / #55ff55
+ */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 1 . BASE (Estilo Menu de Opções)                                                                                                                *
+ ════════════════════════════════════════════════════════════════════════ */
+QMainWindow, QDialog, QMenu, QWidget#treePanel, QWidget#editorPanel,
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader,
+QStatusBar#appStatusBar, QMenuBar, QScrollArea, QDialog#addParamDialog {
+    background-color: #2c2c2c;
+}
+QWidget {
+    color: #e0e0e0;
+    font-family: "Minecraftia", "Monocraft", "Courier New", monospace;
+    font-size: 13px;
+}
+QMainWindow {
+    background-color: #121212;
+}
+QWidget#treePanel, QWidget#editorPanel {
+    background-color: #3c3c3c;
+    border: 3px solid #1c1c1c;
+}
+QSplitter#mainSplitter::handle {
+    background-color: #1c1c1c;
+    width: 6px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 2 . CABECALHOS (Estilo Títulos de Tela)                                                                                                         *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader {
+    background-color: #4c4c4c;
+    color: #ffff55; /* Amarelo clássico */
+    font-weight: bold;
+    padding: 10px;
+    border-top: 3px solid #7c7c7c; border-left: 3px solid #7c7c7c;
+    border-right: 3px solid #2c2c2c; border-bottom: 3px solid #2c2c2c;
+}
+QLabel#editorHeader { font-size: 16px; color: #ffffff; text-shadow: 2px 2px #3f3f3f; }
+QLabel#instanceLabel { font-size: 13px; color: #ffaa00; }
+QLabel#sectionHeader {
+    background-color: #2c2c2c;
+    color: #55ff55;
+    padding: 6px 10px;
+    border: 2px solid #1c1c1c;
+    font-weight: bold;
+}
+QLabel#editorPlaceholder { color: #aaaaaa; font-size: 14px; }
+QLabel#editorError { color: #ff5555; font-size: 14px; font-weight: bold; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 3 . CARDS DE PARAMETRO (Estilo Slot de Inventário Avançado)                                                                                     *
+ ════════════════════════════════════════════════════════════════════════ */
+QFrame#paramCard {
+    background-color: #4c4c4c;
+    border-top: 3px solid #7c7c7c; border-left: 3px solid #7c7c7c;
+    border-right: 3px solid #1c1c1c; border-bottom: 3px solid #1c1c1c;
+    padding: 10px;
+}
+QFrame#paramCard:hover {
+    background-color: #555555;
+    border-top: 3px solid #ffffff; border-left: 3px solid #ffffff; /* Brilho de seleção */
+}
+QLabel#paramName { color: #ffffff; font-weight: bold; }
+QLabel#paramType { color: #55ffff; font-size: 11px; } /* Cor azul diamante para o tipo */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 4 . INPUTS (Caixas de Texto Pretas Clássicas)                                                                                                   *
+ ════════════════════════════════════════════════════════════════════════ */
+QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QLineEdit#paramInput, QLineEdit#spinValue {
+    background-color: #000000;
+    color: #a0a0a0;
+    border-top: 3px solid #3c3c3c; border-left: 3px solid #3c3c3c;
+    border-right: 3px solid #ffffff; border-bottom: 3px solid #ffffff;
+    padding: 6px 8px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
+    color: #ffffff;
+    border-right: 3px solid #ffff55; border-bottom: 3px solid #ffff55; /* Foco amarelo */
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 5 . TOGGLE SWITCH (Estilo Alavanca de Redstone)                                                                                                 *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#toggleSwitch { background: transparent; }
+QWidget#toggleTrack { border: 2px solid #000000; }
+QWidget#toggleTrack[checked="false"] { background-color: #555555; }
+QWidget#toggleTrack[checked="true"] { background-color: #22aa22; } /* Verde escuro ativado */
+QWidget#toggleKnob { background-color: #8b8b8b; border: 2px solid #ffffff; }
+QWidget#toggleKnob[checked="true"] { background-color: #55ff55; border: 2px solid #ffffff; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 6 . BOTOES (O Icônico Botão Cinza 3D do Minecraft)                                                                                              *
+ ════════════════════════════════════════════════════════════════════════ */
+QPushButton {
+    background-color: #8b8b8b;
+    color: #e0e0e0;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-top: 3px solid #ffffff; border-left: 3px solid #ffffff;
+    border-right: 3px solid #000000; border-bottom: 3px solid #000000;
+}
+QPushButton:hover {
+    background-color: #9c9c9c;
+    color: #ffff55; /* Texto fica amarelo ao passar o mouse */
+    border-top: 3px solid #ffffff; border-left: 3px solid #ffffff;
+    border-right: 3px solid #000000; border-bottom: 3px solid #000000;
+}
+QPushButton:pressed {
+    background-color: #555555;
+    color: #aaaaaa;
+    /* Inverte as bordas para parecer que foi afundado */
+    border-top: 3px solid #000000; border-left: 3px solid #000000;
+    border-right: 3px solid #ffffff; border-bottom: 3px solid #ffffff;
+}
+
+/* Botões Customizados mantendo a física 3D do jogo */
+QPushButton#btnSalvar { background-color: #3c8b3c; color: #ffffff; border-top-color: #55ff55; border-left-color: #55ff55; }
+QPushButton#btnSalvar:hover { background-color: #4ca64c; color: #ffff55; }
+
+QPushButton#btnBackup { background-color: #3c7c8b; color: #ffffff; border-top-color: #55ffff; border-left-color: #55ffff; }
+QPushButton#btnBackup:hover { background-color: #4ca1b2; color: #ffff55; }
+
+QPushButton#btnBrowse { background-color: #8b6c3c; color: #ffffff; border-top-color: #ffaa00; border-left-color: #ffaa00; }
+QPushButton#btnBrowse:hover { background-color: #a6814c; color: #ffff55; }
+
+QPushButton#btnCancelar { background-color: #8b3c3c; color: #ffffff; border-top-color: #ff5555; border-left-color: #ff5555; }
+QPushButton#btnCancelar:hover { background-color: #a64c4c; color: #ffff55; }
+
+QPushButton#btnAddParam { background-color: #8b8b8b; min-height: 32px; }
+QPushButton#btnDeleteParam {
+    background-color: #8b3c3c; color: #ffffff; border-top-color: #ff5555; border-left-color: #ff5555;
+    min-width: 28px; max-width: 28px; min-height: 28px; max-height: 28px; padding: 0px;
+}
+QPushButton#spinBtn {
+    background-color: #8b8b8b; color: #ffffff;
+    min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; padding: 0px;
+}
+QPushButton#sectionToggle {
+    background-color: #2c2c2c; color: #ffff55; text-align: left; padding: 8px 12px;
+    border: 2px solid #1c1c1c;
+}
+QPushButton#sectionToggle:hover { background-color: #3c3c3c; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 7 . TABS | CHECKBOX | ARVORE | SCROLL | RAW | STATUS (Visual Retrô)                                                                             *
+ ════════════════════════════════════════════════════════════════════════ */
+QTabWidget#editorTabs::pane {
+    background-color: #3c3c3c;
+    border: 3px solid #1c1c1c;
+}
+QTabBar::tab {
+    background-color: #2c2c2c;
+    color: #aaaaaa;
+    padding: 8px 16px;
+    border-top: 3px solid #ffffff; border-left: 3px solid #ffffff; border-right: 3px solid #000000;
+    margin-right: 4px;
+}
+QTabBar::tab:selected {
+    background-color: #3c3c3c;
+    color: #ffff55;
+    border-bottom: none; /* Conecta visualmente com o painel */
+}
+
+QCheckBox::indicator:unchecked { background-color: #000000; border: 2px solid #8b8b8b; }
+QCheckBox::indicator:checked { background-color: #55ff55; border: 2px solid #ffffff; }
+
+QTreeWidget#modTree {
+    background-color: #1a1a1a;
+    border: none;
+    border-right: 3px solid #1c1c1c;
+}
+QTreeWidget#modTree::item { padding: 4px; }
+QTreeWidget#modTree::item:hover { background-color: #2c2c2c; color: #ffff55; }
+QTreeWidget#modTree::item:selected { background-color: #4c4c4c; color: #ffffff; border: 2px dashed #ffffff; } /* Visual clássico de seleção */
+QHeaderView::section { background-color: #2c2c2c; color: #ffff55; padding: 6px; font-weight: bold; border: 2px solid #1c1c1c; }
+
+QScrollArea { border: none; }
+QScrollBar:vertical { background-color: #000000; width: 12px; }
+QScrollBar::handle:vertical { background-color: #8b8b8b; border: 2px solid #ffffff; }
+
+QTextEdit#rawEditor { background-color: #000000; color: #ffffff; padding: 10px; }
+QStatusBar#appStatusBar { background-color: #1c1c1c; color: #55ffff; border-top: 3px solid #2c2c2c; }
+QMenuBar { background-color: #2c2c2c; color: #ffffff; border-bottom: 3px solid #1c1c1c; }
+QMenuBar::item:selected { background-color: #8b8b8b; color: #ffff55; }
+QMenu { background-color: #2c2c2c; color: #ffffff; border: 3px solid #1c1c1c; }
+QMenu::item:selected { background-color: #8b8b8b; color: #ffff55; }
+
+QDialog#addParamDialog { background-color: #2c2c2c; border: 4px solid #1c1c1c; }
+QToolTip { background-color: #0f0a14; color: #cc55ff; border: 2px solid #2e0066; padding: 5px; } /* Caixa roxa de Tooltip igual a do Inventário */

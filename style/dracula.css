@@ -1,0 +1,209 @@
+/* =========================================================================
+ M inecraft Mod Config Editor — Official Dracula Theme                                                             *
+ Tema atual: Dracula Oficial (Premium Dark Mode)
+ ========================================================================= */
+
+/* Paleta Oficial Dracula:
+ F undo geral:     #282a36 (Dracula Background)                                                                    *
+ Fundo principal: #1e1f29 (Dracula Current Line / Escuro)
+ Paineis:         #21222c (Dracula Foreground Alternativo)
+ Cabecalhos:      #bd93f9 (Roxo Dracula) com texto #ffffff
+ Cards:           #44475a (Dracula Selection) com bordas suaves
+ Inputs:          #1e1f29 com texto #f8f8f2 (Branco Dracula)
+ Toggle ON:       #50fa7b (Verde Dracula)
+ Destaque:        #ff79c6 (Rosa Dracula)
+ Sucesso/Salvar:  #50fa7b (Verde Dracula)
+ Backup/Azul:     #6272a4 (Azul Comentário)
+ Browse/Laranja:  #ffb86c (Laranja Dracula)
+ Cancel/Vermelho: #ff5555 (Vermelho Dracula)
+ Selecao tree:    #bd93f9 sobre #44475a
+ */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 1 . BASE (O clássico ecossistema escuro do Dracula)                                                               *
+ ════════════════════════════════════════════════════════════════════════ */
+QMainWindow, QDialog, QMenu, QWidget#treePanel, QWidget#editorPanel,
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader,
+QStatusBar#appStatusBar, QMenuBar, QScrollArea, QDialog#addParamDialog {
+    background-color: #282a36;
+}
+QWidget {
+    color: #f8f8f2; /* Branco Dracula (suave, não cansa os olhos) */
+    font-family: "JetBrains Mono", "Fira Code", "Monocraft", "Courier New", monospace;
+    font-size: 13px;
+}
+QMainWindow {
+    background-color: #1e1f29;
+}
+QWidget#treePanel, QWidget#editorPanel {
+    background-color: #21222c;
+    border: 1px solid #44475a;
+}
+QSplitter#mainSplitter::handle {
+    background-color: #44475a;
+    width: 5px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 2 . CABECALHOS (Destaques em Roxo e Rosa)                                                                         *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader {
+    background-color: #343746;
+    color: #bd93f9; /* Roxo assinatura */
+    font-weight: bold;
+    padding: 10px;
+    border-bottom: 2px solid #bd93f9;
+}
+QLabel#editorHeader { font-size: 15px; color: #ff79c6; } /* Rosa Dracula */
+QLabel#instanceLabel { font-size: 13px; color: #f1fa8c; } /* Amarelo Dracula */
+QLabel#sectionHeader {
+    background-color: #1e1f29;
+    color: #8be9fd; /* Ciano Dracula */
+    padding: 6px 10px;
+    border-left: 4px solid #8be9fd;
+    font-weight: bold;
+}
+QLabel#editorPlaceholder { color: #6272a4; font-size: 14px; }
+QLabel#editorError { color: #ff5555; font-size: 14px; font-weight: bold; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 3 . CARDS DE PARAMETRO (Tons de Seleção Escura)                                                                   *
+ ════════════════════════════════════════════════════════════════════════ */
+QFrame#paramCard {
+    background-color: #282a36;
+    border: 1px solid #44475a;
+    border-radius: 6px;
+    padding: 10px;
+}
+QFrame#paramCard:hover {
+    background-color: #343746;
+    border: 1px solid #6272a4;
+}
+QLabel#paramName { color: #f8f8f2; font-weight: bold; }
+QLabel#paramType { color: #6272a4; font-size: 11px; font-style: italic; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 4 . INPUTS (Imersivos e de Alto Contraste)                                                                        *
+ ════════════════════════════════════════════════════════════════════════ */
+QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QLineEdit#paramInput, QLineEdit#spinValue {
+    background-color: #1e1f29;
+    color: #f8f8f2;
+    border: 1px solid #44475a;
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
+    border: 1px solid #bd93f9; /* Foco roxo elétrico */
+    background-color: #21222c;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 5 . TOGGLE SWITCH                                                                                                 *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#toggleSwitch { background: transparent; }
+QWidget#toggleTrack { border: 1px solid #44475a; border-radius: 8px; }
+QWidget#toggleTrack[checked="false"] { background-color: #44475a; }
+QWidget#toggleTrack[checked="true"] { background-color: #50fa7b; } /* Verde neon */
+QWidget#toggleKnob { background-color: #f8f8f2; border-radius: 6px; }
+QWidget#toggleKnob[checked="true"] { background-color: #282a36; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 6 . BOTOES (Paleta Neon Completa)                                                                                 *
+ ════════════════════════════════════════════════════════════════════════ */
+QPushButton {
+    background-color: #44475a;
+    color: #f8f8f2;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: 1px solid #6272a4;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #6272a4;
+}
+QPushButton:pressed {
+    background-color: #21222c;
+}
+
+/* Botões com as cores de ação específicas do Dracula */
+QPushButton#btnSalvar { background-color: #243f36; color: #50fa7b; border: 1px solid #50fa7b; }
+QPushButton#btnSalvar:hover { background-color: #50fa7b; color: #282a36; }
+
+QPushButton#btnBackup { background-color: #283049; color: #8be9fd; border: 1px solid #8be9fd; }
+QPushButton#btnBackup:hover { background-color: #8be9fd; color: #282a36; }
+
+QPushButton#btnBrowse { background-color: #443b35; color: #ffb86c; border: 1px solid #ffb86c; }
+QPushButton#btnBrowse:hover { background-color: #ffb86c; color: #282a36; }
+
+QPushButton#btnCancelar { background-color: #3d2626; color: #ff5555; border: 1px solid #ff5555; }
+QPushButton#btnCancelar:hover { background-color: #ff5555; color: #282a36; }
+
+QPushButton#btnAddParam { background-color: #bd93f9; color: #282a36; border: none; min-height: 32px; }
+QPushButton#btnAddParam:hover { background-color: #caa6fa; }
+
+QPushButton#btnDeleteParam { background-color: #ff5555; color: #ffffff; border: none; min-width: 28px; max-width: 28px; min-height: 28px; max-height: 28px; padding: 0px; border-radius: 4px; }
+QPushButton#btnDeleteParam:hover { background-color: #ff7979; }
+
+QPushButton#spinBtn { background-color: #44475a; color: #8be9fd; border: 1px solid #6272a4; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; border-radius: 4px; }
+QPushButton#spinBtn:hover { background-color: #6272a4; }
+
+QPushButton#sectionToggle { background-color: #1e1f29; color: #bd93f9; text-align: left; padding: 8px 12px; border: 1px solid #44475a; border-radius: 4px; }
+QPushButton#sectionToggle:hover { background-color: #242632; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 7 . TABS | ARVORE | SCROLL | RAW | STATUS                                                                         *
+ ════════════════════════════════════════════════════════════════════════ */
+QTabWidget#editorTabs::pane {
+    background-color: #21222c;
+    border-top: 2px solid #bd93f9;
+}
+QTabBar::tab {
+    background-color: #1e1f29;
+    color: #6272a4;
+    padding: 8px 16px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    margin-right: 2px;
+}
+QTabBar::tab:hover { background-color: #282a36; color: #f8f8f2; }
+QTabBar::tab:selected {
+    background-color: #21222c;
+    color: #ff79c6;
+    font-weight: bold;
+}
+
+QCheckBox::indicator:unchecked { background-color: #1e1f29; border: 1px solid #44475a; border-radius: 3px; }
+QCheckBox::indicator:checked { background-color: #50fa7b; border: 1px solid #50fa7b; border-radius: 3px; }
+
+/* Árvore de Arquivos à Esquerda */
+QTreeWidget#modTree {
+    background-color: #1e1f29;
+    color: #f8f8f2;
+    border: none;
+    border-right: 1px solid #44475a;
+}
+QTreeWidget#modTree::item { padding: 5px; }
+QTreeWidget#modTree::item:hover { background-color: #282a36; color: #8be9fd; }
+QTreeWidget#modTree::item:selected { background-color: #44475a; color: #50fa7b; border-left: 3px solid #50fa7b; }
+QHeaderView::section { background-color: #21222c; color: #bd93f9; padding: 6px; font-weight: bold; border: none; border-bottom: 1px solid #44475a; }
+
+QScrollArea { border: none; }
+QScrollBar:vertical { background-color: #1e1f29; width: 10px; }
+QScrollBar::handle:vertical { background-color: #44475a; border-radius: 5px; }
+QScrollBar::handle:vertical:hover { background-color: #6272a4; }
+
+QTextEdit#rawEditor { background-color: #1e1f29; color: #f1fa8c; padding: 10px; } /* Editor bruto em amarelo suave */
+QStatusBar#appStatusBar { background-color: #21222c; color: #6272a4; border-top: 1px solid #44475a; }
+QMenuBar { background-color: #21222c; color: #f8f8f2; border-bottom: 1px solid #44475a; }
+QMenuBar::item:selected { background-color: #44475a; color: #ff79c6; }
+QMenu { background-color: #21222c; color: #f8f8f2; border: 1px solid #44475a; }
+QMenu::item:selected { background-color: #bd93f9; color: #282a36; }
+
+QToolTip { background-color: #282a36; color: #f1fa8c; border: 1px solid #bd93f9; padding: 5px; border-radius: 4px; }
