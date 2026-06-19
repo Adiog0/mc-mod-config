@@ -1479,7 +1479,8 @@ class MainWindow(QMainWindow):
         initial = str(STYLE_DIR) if STYLE_DIR.is_dir() else ""
         path, _ = QFileDialog.getOpenFileName(
             self, self.tr("Selecionar arquivo CSS"), initial,
-            "CSS Files (*.css *.qss);;All Files (*)"
+            "CSS Files (*.css *.qss);;All Files (*)",
+            options=QFileDialog.Option.DontUseNativeDialog,
         )
         if path:
             save_custom_css_path(path)
@@ -1572,7 +1573,8 @@ class MainWindow(QMainWindow):
             initial_dir = str(Path(settings["last_instance"]).parent)
 
         path = QFileDialog.getExistingDirectory(
-            self, self.tr("Selecione a pasta da instancia Minecraft"), initial_dir
+            self, self.tr("Selecione a pasta da instancia Minecraft"), initial_dir,
+            options=QFileDialog.Option.DontUseNativeDialog,
         )
         if path:
             self._load_configs(path)
@@ -1799,10 +1801,6 @@ def main() -> None:
     log.info("OS: %s | platform: %s", platform.system(), sys.platform)
 
     # Create application
-    # On Linux, disable KDE platform theme integration in frozen builds
-    # to avoid KIO dependency ("Protocolo desconhecido 'file'")
-    if getattr(sys, 'frozen', False) and sys.platform.startswith("linux"):
-        os.environ["QT_QPA_PLATFORMTHEME"] = ""
     app = QApplication(sys.argv)
 
     # Load i18n translator
