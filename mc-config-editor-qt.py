@@ -536,6 +536,12 @@ class ToggleSwitch(QWidget):
     def _update_knob(self):
         x = 22 if self._checked else 2
         self._knob.setGeometry(x, 0, 20, 24)
+        self._track.setProperty("checked", self._checked)
+        self._track.style().unpolish(self._track)
+        self._track.style().polish(self._track)
+        self._knob.setProperty("checked", self._checked)
+        self._knob.style().unpolish(self._knob)
+        self._knob.style().polish(self._knob)
 
     def isChecked(self):
         return self._checked

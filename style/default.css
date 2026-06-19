@@ -117,12 +117,20 @@ QTextEdit:focus, QLineEdit#spinValue:focus { border-color: #c9a03a; }
 /* ── 5. Toggle Switch ───────────────────────────────────────────────── */
 QWidget#toggleSwitch { background: transparent; }
 QWidget#toggleTrack {
-    background-color: #4a3828;
     border-radius: 8px;
+}
+QWidget#toggleTrack[checked="false"] {
+    background-color: #4a3828;
+}
+QWidget#toggleTrack[checked="true"] {
+    background-color: #5a8a45;
 }
 QWidget#toggleKnob {
     background-color: #f0e8d8;
     border-radius: 12px;
+}
+QWidget#toggleKnob[checked="true"] {
+    background-color: #ffffff;
 }
 
 
