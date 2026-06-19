@@ -1,0 +1,168 @@
+/* =========================================================================
+ M inecra*ft Mod Config Editor — Slate Graphite (Dracula Monocromático)
+ Tema atual: Tons de Cinza, Ardósia e Grafite (Sem Roxo/Rosa)
+ ========================================================================= */
+
+/* Paleta de Cores:
+ F undo g*eral:     #202228 (Cinza ardósia escuro)
+ Fundo principal: #16171a (Grafite profundo / Quase preto)
+ Paineis:         #24262e (Cinza asfalto fechado)
+ Cabecalhos:      #2f313d com texto #d1d5db (Cinza claro)
+ Cards:           #2a2c35 com bordas sutis
+ Inputs:          #16171a com texto #e5e7eb
+ Toggle ON:       #4b6b53 (Verde oliva fosco)
+ Destaque/Azul:   #63748a (Azul acinzentado / Steel Blue)
+ Sucesso/Salvar:  #4b6b53 (Verde contido)
+ Browse/Laranja:  #8c765c (Tom de bronze/madeira fosca)
+ Cancel/Vermelho: #8c4a4a (Terracota opaco)
+ Selecao tree:    #4b5563 sobre #2a2c35
+ */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 1 . BASE* (Tons de Grafite e Ardósia)
+ ════════════════════════════════════════════════════════════════════════ */
+QMainWindow, QDialog, QMenu, QWidget#treePanel, QWidget#editorPanel,
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader,
+QStatusBar#appStatusBar, QMenuBar, QScrollArea, QDialog#addParamDialog {
+    background-color: #202228;
+}
+QWidget {
+    color: #d1d5db; /* Texto cinza claro, sem agressividade */
+    font-family: "JetBrains Mono", "Fira Code", "Monocraft", "Courier New", monospace;
+    font-size: 13px;
+}
+QMainWindow {
+    background-color: #16171a;
+}
+QWidget#treePanel, QWidget#editorPanel {
+    background-color: #24262e;
+    border: 1px solid #374151;
+}
+QSplitter#mainSplitter::handle {
+    background-color: #374151;
+    width: 5px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 2 . CABE*CALHOS (Monocromáticos e Limpos)
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader {
+    background-color: #2f313d;
+    color: #e5e7eb;
+    font-weight: bold;
+    padding: 10px;
+    border-bottom: 2px solid #4b5563;
+}
+QLabel#editorHeader { font-size: 15px; color: #ffffff; }
+QLabel#instanceLabel { font-size: 13px; color: #9ca3af; }
+QLabel#sectionHeader {
+    background-color: #16171a;
+    color: #93a3b8; /* Azul cinzento opaco */
+    padding: 6px 10px;
+    border-left: 4px solid #63748a;
+    font-weight: bold;
+}
+QLabel#editorPlaceholder { color: #4b5563; font-size: 14px; }
+QLabel#editorError { color: #8c4a4a; font-size: 14px; font-weight: bold; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 3 . CARD*S DE PARAMETRO (Cinza Concreto)
+ ════════════════════════════════════════════════════════════════════════ */
+QFrame#paramCard {
+    background-color: #2a2c35;
+    border: 1px solid #374151;
+    border-radius: 5px;
+    padding: 10px;
+}
+QFrame#paramCard:hover {
+    background-color: #2f323d;
+    border: 1px solid #4b5563;
+}
+QLabel#paramName { color: #f3f4f6; font-weight: bold; }
+QLabel#paramType { color: #6b7280; font-size: 11px; font-style: italic; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 4 . INPU*TS (Fundo Escuro com Bordas de Grafite)
+ ════════════════════════════════════════════════════════════════════════ */
+QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QLineEdit#paramInput, QLineEdit#spinValue {
+    background-color: #16171a;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
+    border: 1px solid #63748a; /* Foco em azul gélido discreto */
+    background-color: #1c1d24;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 5 . TOGG*LE SWITCH
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#toggleSwitch { background: transparent; }
+QWidget#toggleTrack { border: 1px solid #374151; border-radius: 8px; }
+QWidget#toggleTrack[checked="false"] { background-color: #374151; }
+QWidget#toggleTrack[checked="true"] { background-color: #4b6b53; } /* Verde oliva fosco */
+QWidget#toggleKnob { background-color: #d1d5db; border-radius: 6px; }
+QWidget#toggleKnob[checked="true"] { background-color: #16171a; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 6 . BOTO*ES (Cores Opacas e Amortecidas)
+ ════════════════════════════════════════════════════════════════════════ */
+QPushButton {
+    background-color: #374151;
+    color: #e5e7eb;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: 1px solid #4b5563;
+    border-radius: 4px;
+}
+QPushButton:hover {
+    background-color: #4b5563;
+    color: #ffffff;
+}
+QPushButton:pressed {
+    background-color: #1f2937;
+}
+
+/* Botões com cores utilitárias desaturadas */
+QPushButton#btnSalvar { background-color: #2e4233; color: #87a98f; border: 1px solid #4b6b53; }
+QPushButton#btnSalvar:hover { background-color: #4b6b53; color: #ffffff; }
+
+QPushButton#btnBackup { background-color: #2a3442; color: #93a3b8; border: 1px solid #63748a; }
+QPushButton#btnBackup:hover { background-color: #63748a; color: #ffffff; }
+
+QPushButton#btnBrowse { background-color: #423b34; color: #b5a28c; border: 1px solid #8c765c; }
+QPushButton#btnBrowse:hover { background-color: #8c765c; color: #ffffff; }
+
+QPushButton#btnCancelar { background-color: #422d2d; color: #b58282; border: 1px solid #8c4a4a; }
+QPushButton#btnCancelar:hover { background-color: #8c4a4a; color: #ffffff; }
+
+QPushButton#btnAddParam { background-color: #4b5563; color: #ffffff; border: none; min-height: 32px; }
+QPushButton#btnAddParam:hover { background-color: #6b7280; }
+
+QPushButton#btnDeleteParam { background-color: #8c4a4a; color: #ffffff; border: none; min-width: 28px; max-width: 28px; min-height: 28px; max-height: 28px; padding: 0px; border-radius: 4px; }
+QPushButton#btnDeleteParam:hover { background-color: #a95a5a; }
+
+QPushButton#spinBtn { background-color: #374151; color: #93a3b8; border: 1px solid #4b5563; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; border-radius: 4px; }
+
+QPushButton#sectionToggle { background-color: #16171a; color: #93a3b8; text-align: left; padding: 8px 12px; border: 1px solid #374151; border-radius: 4px; }
+QPushButton#sectionToggle:hover { background-color: #202228; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 7 . TABS* | ARVORE | SCROLL | RAW | STATUS
+ ════════════════════════════════════════════════════════════════════════ */
+QTabWidget#editorTabs::pane {
+    background-color: #24262e;
+    border-top: 2px solid #63748a;
+}
+QTabBar::tab {
+    background-color: #16171a;
+    color:

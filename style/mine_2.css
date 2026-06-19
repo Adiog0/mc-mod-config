@@ -1,0 +1,198 @@
+/* =========================================================================
+ M inecraft Mod Config Editor — Overworld Biomes (V2 - Totalmente Colorido)                    *
+ ========================================================================= */
+
+/* Paleta Corrigida com base em Captura_de_tela_20260619_145819.png:
+ F undo geral/Céu:  #4baae6 (Azul Celeste)                                                     *
+ Painéis/Madeira:  #5c402c (Marrom Tronco)
+ Árvore/Inputs:    #c4ab80 (Areia Clara da Praia / Madeira Descascada)
+ Texto Geral:      #ffffff (Branco)
+ Texto em Inputs:  #2d1e10 (Marrom Escuro para dar contraste na areia)
+ */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 1 . BASE (Removendo qualquer fundo preto residual)                                            *
+ ════════════════════════════════════════════════════════════════════════ */
+QMainWindow, QDialog, QMenu, QWidget#treePanel, QWidget#editorPanel,
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader,
+QStatusBar#appStatusBar, QMenuBar, QScrollArea, QDialog#addParamDialog {
+    background-color: #4baae6; /* Força o azul do céu em todas as bases */
+}
+QWidget {
+    color: #ffffff;
+    font-family: "Minecraftia", "Monocraft", "Courier New", monospace;
+    font-size: 13px;
+}
+QMainWindow {
+    background-color: #5c402c;
+}
+QWidget#treePanel, QWidget#editorPanel {
+    background-color: #5c402c; /* Marrom de madeira */
+    border: 3px solid #3c2a1c;
+}
+QSplitter#mainSplitter::handle {
+    background-color: #3c2a1c;
+    width: 6px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 2 . CABECALHOS                                                                                *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#treeHeader, QLabel#instanceLabel, QLabel#editorHeader {
+    background-color: #f4a1c8; /* Rosa Cerejeira vibrante */
+    color: #ffffff;
+    font-weight: bold;
+    padding: 10px;
+    border-top: 3px solid #ffc2e0; border-left: 3px solid #ffc2e0;
+    border-right: 3px solid #c27699; border-bottom: 3px solid #c27699;
+}
+QLabel#editorHeader { font-size: 16px; color: #ffffff; }
+QLabel#instanceLabel { font-size: 13px; color: #ffff55; } /* Amarelo Sol */
+QLabel#sectionHeader {
+    background-color: #e67e22; /* Laranja Terracota */
+    color: #ffffff;
+    padding: 6px 10px;
+    border: 2px solid #b85c14;
+    font-weight: bold;
+}
+QLabel#editorPlaceholder { color: #ffffff; font-size: 14px; }
+QLabel#editorError { color: #ba2b2b; font-size: 14px; font-weight: bold; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 3 . CARDS DE PARAMETRO (Blocos de Grama)                                                      *
+ ════════════════════════════════════════════════════════════════════════ */
+QFrame#paramCard {
+    background-color: #709a32; /* Verde Grama */
+    border-top: 3px solid #92cc41; border-left: 3px solid #92cc41;
+    border-right: 3px solid #4d6e20; border-bottom: 3px solid #4d6e20;
+    padding: 10px;
+}
+QFrame#paramCard:hover {
+    background-color: #82b33a;
+    border-top: 3px solid #ffffff; border-left: 3px solid #ffffff;
+}
+QLabel#paramName { color: #ffffff; font-weight: bold; }
+QLabel#paramType { color: #ffff55; font-size: 11px; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 4 . INPUTS CORRIGIDOS (Substituído preto por Areia Escavada/Madeira Clara)                    *
+ ════════════════════════════════════════════════════════════════════════ */
+QLineEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QLineEdit#paramInput, QLineEdit#spinValue {
+    background-color: #c4ab80; /* Tom de bloco de areia/bétula */
+    color: #2d1e10; /* Texto em marrom escuro para leitura perfeita */
+    font-weight: bold;
+    border-top: 3px solid #8c7653; border-left: 3px solid #8c7653;
+    border-right: 3px solid #ffffff; border-bottom: 3px solid #ffffff;
+    padding: 6px 8px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QTextEdit:focus {
+    background-color: #dbbf8f;
+    border-right: 3px solid #4baae6; border-bottom: 3px solid #4baae6; /* Brilho de água ao focar */
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 5 . TOGGLE SWITCH                                                                             *
+ ════════════════════════════════════════════════════════════════════════ */
+QWidget#toggleSwitch { background: transparent; }
+QWidget#toggleTrack { border: 2px solid #3c2a1c; }
+QWidget#toggleTrack[checked="false"] { background-color: #8b6c3c; }
+QWidget#toggleTrack[checked="true"] { background-color: #ffff55; }
+QWidget#toggleKnob { background-color: #ffffff; border: 2px solid #e67e22; }
+QWidget#toggleKnob[checked="true"] { background-color: #e67e22; border: 2px solid #ffffff; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 6 . BOTOES (Fidelidade total aos botões inferiores da imagem)                                 *
+ ════════════════════════════════════════════════════════════════════════ */
+QPushButton {
+    background-color: #8b6c3c;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-top: 3px solid #b89358; border-left: 3px solid #b89358;
+    border-right: 3px solid #3c2a1c; border-bottom: 3px solid #3c2a1c;
+}
+QPushButton:hover { background-color: #a17e46; color: #ffff55; }
+QPushButton:pressed {
+    background-color: #3c2a1c;
+    border-top: 3px solid #000000; border-left: 3px solid #000000;
+    border-right: 3px solid #ffffff; border-bottom: 3px solid #ffffff;
+}
+
+QPushButton#btnSalvar { background-color: #3ca63c; border-top-color: #55ff55; border-left-color: #55ff55; border-right-color: #1e541e; border-bottom-color: #1e541e; }
+QPushButton#btnSalvar:hover { background-color: #4cb84c; }
+
+QPushButton#btnBackup { background-color: #1d7fc4; border-top-color: #4baae6; border-left-color: #4baae6; border-right-color: #0f4a75; border-bottom-color: #0f4a75; }
+QPushButton#btnBackup:hover { background-color: #3194db; }
+
+QPushButton#btnBrowse { background-color: #e67e22; border-top-color: #ff9f43; border-left-color: #ff9f43; border-right-color: #a65411; border-bottom-color: #a65411; }
+
+QPushButton#btnCancelar { background-color: #ba2b2b; border-top-color: #ff5555; border-left-color: #ff5555; border-right-color: #731717; border-bottom-color: #731717; }
+QPushButton#btnCancelar:hover { background-color: #d93d3d; }
+
+QPushButton#btnAddParam { background-color: #709a32; border-top-color: #92cc41; border-left-color: #92cc41; min-height: 32px; }
+QPushButton#btnDeleteParam { background-color: #ba2b2b; border-top-color: #ff5555; border-left-color: #ff5555; min-width: 28px; max-width: 28px; min-height: 28px; max-height: 28px; padding: 0px; }
+QPushButton#spinBtn { background-color: #5c402c; border-top-color: #8b6c3c; border-left-color: #8b6c3c; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; }
+
+QPushButton#sectionToggle { background-color: #3c2a1c; color: #ffff55; text-align: left; padding: 8px 12px; border: 2px solid #1b120c; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+ 7 . TABS & ÁRVORE DE MODS CORRIGIDA (Removido os fundos pretos da imagem)                     *
+ ════════════════════════════════════════════════════════════════════════ */
+QTabWidget#editorTabs::pane {
+    background-color: #5c402c;
+    border: 3px solid #3c2a1c;
+}
+QTabBar::tab {
+    background-color: #3c2a1c;
+    color: #ffffff; /* Corrigido: Texto agora é branco e visível */
+    padding: 8px 16px;
+    border-top: 3px solid #5c402c; border-left: 3px solid #5c402c; border-right: 3px solid #1b120c;
+    margin-right: 4px;
+}
+QTabBar::tab:selected {
+    background-color: #709a32; /* Cor de grama para a aba ativa */
+    color: #ffff55;
+    border-top: 3px solid #92cc41;
+}
+
+/* Árvore de Mods (Esquerda) - Corrigido para estilo Madeira Clara de Caverna */
+QTreeWidget#modTree {
+    background-color: #decba7; /* Força um fundo bege/areia claro no painel esquerdo */
+    color: #2d1e10; /* Texto escuro para contraste violento e leitura fácil */
+    border: none;
+    border-right: 3px solid #3c2a1c;
+}
+QTreeWidget#modTree::item { padding: 6px; color: #2d1e10; }
+QTreeWidget#modTree::item:hover { background-color: #c4ab80; color: #000000; }
+QTreeWidget#modTree::item:selected {
+    background-color: #709a32; /* Bloco de grama quando selecionado */
+    color: #ffffff;
+    border: 2px dashed #ffffff;
+}
+QHeaderView::section {
+    background-color: #3c2a1c;
+    color: #ffff55;
+    padding: 6px;
+    font-weight: bold;
+    border: 1px solid #1b120c;
+}
+
+QScrollArea { border: none; }
+QScrollBar:vertical { background-color: #3c2a1c; width: 12px; }
+QScrollBar::handle:vertical { background-color: #709a32; border: 2px solid #92cc41; }
+
+QTextEdit#rawEditor { background-color: #2d1e10; color: #55ff55; padding: 10px; }
+QStatusBar#appStatusBar { background-color: #4baae6; color: #ffffff; border-top: 3px solid #3c2a1c; }
+QMenuBar { background-color: #4baae6; color: #ffffff; border-bottom: 3px solid #3c2a1c; }
+QMenuBar::item:selected { background-color: #5c402c; color: #ffff55; }
+QMenu { background-color: #3c2a1c; color: #ffffff; border: 3px solid #1b120c; }
+QMenu::item:selected { background-color: #5c402c; color: #ffff55; }
+
+QToolTip { background-color: #130c07; color: #f4a1c8; border: 2px solid #f4a1c8; padding: 5px; }
