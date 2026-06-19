@@ -31,9 +31,18 @@ from PyQt6.QtWidgets import (
     QTreeWidgetItem, QVBoxLayout, QWidget,
 )
 
-# ── Logging ─────────────────────────────────────────────────────────────
+# ── Path resolution ─────────────────────────────────────────────────────
+# In PyInstaller onefile: __file__ points to temp extraction dir.
+# Use executable's directory for persistent files (logs, custom CSS, icons).
 
-SCRIPT_DIR = Path(__file__).resolve().parent
+if getattr(sys, 'frozen', False):
+    SCRIPT_DIR = Path(sys.executable).resolve().parent
+    _MEIPASS_DIR = Path(sys._MEIPASS)
+else:
+    SCRIPT_DIR = Path(__file__).resolve().parent
+    _MEIPASS_DIR = None
+
+# ── Logging ─────────────────────────────────────────────────────────────
 
 VERSION = "1.1.3"
 GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
@@ -55,6 +64,15 @@ log.info("=== mc-config-editor (PyQt6) iniciando ===")
 log.info("Python: %s", sys.version)
 log.info("Executable: %s", sys.executable)
 log.info("Script dir: %s", SCRIPT_DIR)
+
+# ── Copy bundled assets on first run (PyInstaller onefile) ────────────
+if _MEIPASS_DIR is not None:
+    for _folder in ("icons", "style", "i18n"):
+        _src = _MEIPASS_DIR / _folder
+        _dst = SCRIPT_DIR / _folder
+        if _src.is_dir() and not _dst.exists():
+            shutil.copytree(_src, _dst)
+            log.info("Assets extraidos: %s -> %s", _src, _dst)
 
 # ── OS detection ────────────────────────────────────────────────────────
 
