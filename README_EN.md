@@ -1,0 +1,174 @@
+# ⛏ Minecraft Mod Config Editor — by Makalove
+
+Cross-platform visual editor for Minecraft mod configuration files.  
+Supports **PrismLauncher** / **ElyPrismLauncher** instances on Windows, Linux and macOS.
+
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Platform: Cross-platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
+![Python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+![UI: PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
+
+---
+
+## 📸 Screenshots
+
+<details open>
+<summary><b>Click to expand/collapse</b></summary>
+<br>
+<img src="Screenshots/interface_1.png" alt="Main screen" width="800"><br>
+<img src="Screenshots/interface_2.png" alt="Parameter editor" width="800"><br>
+<img src="Screenshots/interface_3.png" alt="Mod selection" width="800"><br>
+<img src="Screenshots/interface_4.png" alt="Raw and visual editor" width="800">
+</details>
+
+---
+
+## 📋 Features
+
+- **Visual editor** with styled cards for each parameter (TOML, JSON, JSON5, YAML)
+- **Raw Editor** with `Visual | Raw` tabs for legacy formats (CFG, Properties, TXT, SNBT, INI)
+- **Custom Toggle Switch** for booleans (replaces checkbox)
+- **Numeric fields** with visible +/− buttons
+- **Expandable tree** of mods → files with highlighted selection
+- **Collapsible sections** with ▶/▼ indicator and `[Click to expand]` hint
+- **Add/remove parameters** via the interface
+- **Automatic backup** with timestamp before each save
+- **Last instance remembered** — reopens where you left off
+- **100% customizable via CSS** — edit `style/default.css` or create `style/custom.css`
+- **PNG icons** (30×30) with automatic emoji fallback
+- **Automatic dependency installation** when opening the app
+
+---
+
+## 🚀 How to use
+
+### Linux / macOS
+```bash
+cd mc-mod-config
+./mc-config-editor                        # instance selector
+./mc-config-editor -i "path/to/instance"  # direct
+```
+
+### Windows
+```cmd
+cd mc-mod-config
+mc-config-editor.bat                      # instance selector
+python mc-config-editor.py -i "C:\path\to\instance"
+```
+
+### Direct Python (any OS)
+```bash
+pip install PyQt6 tomlkit pyjson5 pyyaml
+python mc-config-editor.py
+```
+
+> If any dependency is missing, the app asks whether you want to install it automatically.
+
+---
+
+## 📦 Dependencies
+
+| Package | Use |
+|---|---|
+| **PyQt6** >= 6.0 | Graphical interface |
+| **tomlkit** | Read/write TOML preserving comments |
+| **pyjson5** | Read/write JSON5 |
+| **pyyaml** | Read/write YAML |
+
+One-time installation:
+```bash
+pip install PyQt6 tomlkit pyjson5 pyyaml
+```
+
+---
+
+## 🎨 Themes and CSS
+
+The app is **100% controlled by CSS** (QSS — Qt Style Sheets).  
+Zero hardcoded colors in Python code.
+
+### Changing the theme
+```bash
+cp style/example.css style/custom.css   # create from template
+# Edit style/custom.css with your colors
+```
+
+### Ready-made palettes (in `style/example.css`)
+- **Night Blue** — dark blue tones
+- **Forest Green** — moss green
+- **Minimalist Gray** — clean and neutral
+
+### View Menu
+- `View → Load Custom CSS` — selects any `.css` file  
+- `View → Reset Default CSS` — returns to the original theme
+
+---
+
+## 🖼️ Icons
+
+Icons are loaded from the `icons/` folder as **PNG** files (transparent background).  
+If an icon does not exist, the app uses the corresponding emoji as fallback.
+
+| File | Size | Description |
+|---|---|---|
+| `pickaxe.png` | 30×30 | App icon |
+| `castle.png` | 30×30 | Current instance |
+| `folder.png` | 22×22 | Open instance |
+| `refresh.png` | 22×22 | Reload |
+| `palette.png` | 22×22 | Load CSS |
+| `save.png` | 22×22 | Save / Backup |
+| `undo.png` | 22×22 | Cancel |
+| `block.png` | 16×16 | Mods in the tree |
+| `settings.png` | 16×16 | TOML files |
+| `crafting.png` | 16×16 | JSON files |
+| `scroll.png` | 16×16 | YAML files |
+| `file.png` | 16×16 | Other formats |
+| `add.png` | 22×22 | Add parameter |
+| `delete.png` | 22×22 | Delete parameter |
+
+---
+
+## 🗂️ Project structure
+
+```
+mc-mod-config/
+├── mc-config-editor          ← Linux/macOS launcher
+├── mc-config-editor-qt       ← alternative launcher
+├── mc-config-editor.bat      ← Windows launcher
+├── mc-config-editor.py       ← entry point
+├── mc-config-editor-qt.py    ← main application (PyQt6)
+├── i18n/                     ← translation files (.ts / .qm)
+├── icons/                    ← PNG icons
+├── style/                    ← CSS themes
+└── Screenshots/              ← screenshots
+```
+
+---
+
+## 🔒 Security
+
+- **Zero network calls** — the app never accesses the internet
+- **Zero data collection** — no telemetry or analytics
+- Configuration files are read/written **locally only**
+
+---
+
+## 🧪 Supported formats
+
+| Format | Editor | Preserves comments |
+|---|---|---|
+| `.toml` | Visual (typed fields) | ✅ Yes (via tomlkit) |
+| `.json` | Visual (typed fields) | ❌ |
+| `.json5` | Visual (typed fields) | ❌ |
+| `.yaml` / `.yml` | Visual (typed fields) | ✅ Yes |
+| `.cfg` | Raw (text editor) | ✅ Yes |
+| `.properties` | Raw (text editor) | ✅ Yes |
+| `.txt` | Raw (text editor) | ✅ Yes |
+| `.snbt` | Raw (text editor) | ✅ Yes |
+| `.ini` | Raw (text editor) | ✅ Yes |
+
+---
+
+**Made with 💛 by Makalove**
+
+> 📖 Also available in: [Português](README.md) | [Español](README_ES.md)
