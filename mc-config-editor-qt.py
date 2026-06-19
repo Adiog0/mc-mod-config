@@ -307,6 +307,8 @@ class ConfigFile:
         self.modified = False
         self._original_raw: Optional[str] = None
         self._modified_data: Any = None
+        self._is_semicolon = False
+        self._semicolon_root = ""
 
     @property
     def display_name(self) -> str:
@@ -314,7 +316,7 @@ class ConfigFile:
 
     @property
     def is_structured(self) -> bool:
-        return self.fmt in ("toml", "json", "json5", "yaml", "properties", "snbt", "ini", "cfg")
+        return self.fmt in ("toml", "json", "json5", "yaml", "properties", "snbt", "ini", "cfg", "txt")
 
     def parse(self) -> None:
         if self.parsed_ok:
@@ -335,6 +337,7 @@ class ConfigFile:
             "snbt": self._parse_snbt,
             "ini": self._parse_ini,
             "cfg": self._parse_cfg,
+            "txt": self._parse_text,
         }
         parser = parsers.get(self.fmt)
         if parser:
@@ -449,8 +452,69 @@ class ConfigFile:
             self.parse_error = "INI error: " + str(e)
 
     def _parse_cfg(self, raw: str) -> None:
-        self.parsed_ok = False
-        self.parse_error = "CFG format uses raw editor"
+        data: Dict[str, str] = {}
+        try:
+            for line in raw.splitlines():
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or stripped.startswith("//"):
+                    continue
+                if "=" not in stripped:
+                    continue
+                key, val = stripped.split("=", 1)
+                key = key.strip()
+                if key:
+                    data[key] = val.strip()
+            if data:
+                self.parsed_data = data
+                self._modified_data = data
+                self.parsed_ok = True
+            else:
+                self.parsed_ok = False
+                self.parse_error = "CFG format uses raw editor"
+        except Exception as e:
+            self.parsed_ok = False
+            self.parse_error = "CFG error: " + str(e)
+
+    def _parse_text(self, raw: str) -> None:
+        data: Dict[str, str] = {}
+        self._is_semicolon = False
+        self._semicolon_root = ""
+        try:
+            for line in raw.splitlines():
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#"):
+                    continue
+                if ";" in stripped and "=" in stripped:
+                    self._is_semicolon = True
+                    parts = [p.strip() for p in stripped.split(";") if p.strip()]
+                    for i, part in enumerate(parts):
+                        if "=" in part:
+                            key, val = part.split("=", 1)
+                            key = key.strip()
+                            if key:
+                                data[key] = val.strip()
+                        elif i == 0:
+                            self._semicolon_root = part
+                    continue
+                if "=" in stripped:
+                    key, val = stripped.split("=", 1)
+                elif ":" in stripped:
+                    key, val = stripped.split(":", 1)
+                else:
+                    continue
+                key = key.strip()
+                if key:
+                    data[key] = val.strip()
+            if data:
+                self.parsed_data = data
+                self._modified_data = data
+                self.parsed_ok = True
+            else:
+                self.parsed_ok = False
+                self.parse_error = "No key=value or key:value pairs found"
+        except Exception as e:
+            self.parsed_ok = False
+            self.parse_error = "TXT error: " + str(e)
 
     def get_value(self, key_path: List[str]) -> Any:
         if not self.parsed_ok or not self.is_structured:
@@ -489,6 +553,8 @@ class ConfigFile:
             "properties": self._serialize_properties,
             "snbt": self._serialize_snbt,
             "ini": self._serialize_ini,
+            "cfg": self._serialize_properties,
+            "txt": self._serialize_txt,
         }
         serializer = serializers.get(self.fmt)
         return serializer() if serializer else None
@@ -517,7 +583,12 @@ class ConfigFile:
         return yaml.dump(self._modified_data, default_flow_style=False, allow_unicode=True)
 
     def _serialize_properties(self) -> str:
-        return "\n".join(f"{k}={v}" for k, v in self._modified_data.items()) + "\n"
+        lines = []
+        for k, v in self._modified_data.items():
+            if isinstance(v, bool):
+                v = str(v).lower()
+            lines.append(f"{k}={v}")
+        return "\n".join(lines) + "\n"
 
     def _serialize_snbt(self) -> Optional[str]:
         try:
@@ -534,12 +605,29 @@ class ConfigFile:
         for section, items in self._modified_data.items():
             if section == "__root__":
                 for k, v in items.items():
+                    if isinstance(v, bool):
+                        v = str(v).lower()
                     lines.append(f"{k} = {v}")
             else:
                 lines.append(f"[{section}]")
                 for k, v in items.items():
+                    if isinstance(v, bool):
+                        v = str(v).lower()
                     lines.append(f"{k} = {v}")
         return "\n".join(lines) + "\n"
+
+    def _serialize_txt(self) -> str:
+        if getattr(self, "_is_semicolon", False):
+            root = getattr(self, "_semicolon_root", "")
+            parts = [root] if root else []
+            for k, v in self._modified_data.items():
+                parts.append(f"{k}={v}")
+            return ";".join(parts) + ";\n"
+        lines = []
+        for k, v in self._modified_data.items():
+            lines.append(f"{k}={v}")
+        return "\n".join(lines) + "\n"
+
 
     def backup(self) -> Optional[Path]:
         bak_path = self.path.with_name(f"{self.path.name}.bak.{format_timestamp()}")
@@ -910,7 +998,7 @@ class EditorPanel(QWidget):
         if not cf.parsed_ok:
             cf.parse()
 
-        if cf.parse_error and cf.fmt in ("snbt", "cfg"):
+        if cf.parse_error and cf.fmt in ("snbt", "cfg", "txt"):
             self._placeholder.setVisible(False)
             self._tabs.setVisible(True)
             self._raw_editor.blockSignals(True)
@@ -947,7 +1035,7 @@ class EditorPanel(QWidget):
         self._scroll_layout.addWidget(editor)
 
     def _on_raw_visual_changed(self, editor: QTextEdit) -> None:
-        if self.current_file and self.current_file.fmt in ("snbt", "cfg"):
+        if self.current_file and self.current_file.fmt in ("snbt", "cfg", "txt"):
             self.current_file.set_raw_content(editor.toPlainText())
             self._modified = True
             if self.on_modified:
