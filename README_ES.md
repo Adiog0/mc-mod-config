@@ -193,7 +193,9 @@ mc-mod-config/
 ├── build/                    ← configuración de compilación PyInstaller
 │   ├── build.spec            ←   spec de PyInstaller
 │   ├── build.sh              ←   script de compilación Linux/macOS
-│   └── build.bat             ←   script de compilación Windows
+│   ├── build.bat             ←   script de compilación Windows
+│   ├── generate-icns.sh      ←   generador de .icns (macOS)
+│   └── mc-config-editor.ico  ←   ícono Windows
 ├── i18n/                     ← archivos de traducción (.ts / .qm)
 ├── icons/                    ← íconos PNG
 ├── style/                    ← temas CSS
@@ -204,7 +206,7 @@ mc-mod-config/
 
 ## 🔒 Seguridad
 
-- **Cero llamadas de red** — la app nunca accede a internet
+- **Única llamada de red** — la app consulta la API de GitHub solo para verificar actualizaciones (silencioso, no bloquea)
 - **Cero recolección de datos** — sin telemetría ni analytics
 - Archivos de configuración leídos/escritos **solo localmente**
 
