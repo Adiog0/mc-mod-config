@@ -1799,6 +1799,10 @@ def main() -> None:
     log.info("OS: %s | platform: %s", platform.system(), sys.platform)
 
     # Create application
+    # On Linux, disable KDE platform theme integration in frozen builds
+    # to avoid KIO dependency ("Protocolo desconhecido 'file'")
+    if getattr(sys, 'frozen', False) and sys.platform.startswith("linux"):
+        os.environ["QT_QPA_PLATFORMTHEME"] = ""
     app = QApplication(sys.argv)
 
     # Load i18n translator
