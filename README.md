@@ -10,6 +10,19 @@ Funciona com qualquer instância Minecraft (vanilla, Forge, Fabric, PrismLaunche
 
 ---
 
+## 📸 Screenshots
+
+<details open>
+<summary><b>Clique para expandir/recolher</b></summary>
+<br>
+<img src="Screenshots/interface_1.png" alt="Tela principal" width="800"><br>
+<img src="Screenshots/interface_2.png" alt="Editor de parâmetros" width="800"><br>
+<img src="Screenshots/interface_3.png" alt="Seleção de mods" width="800"><br>
+<img src="Screenshots/interface_4.png" alt="Editor raw e visual" width="800">
+</details>
+
+---
+
 ## 📋 Funcionalidades
 
 - **Editor visual** com cards estilizados para cada parâmetro (TOML, JSON, JSON5, YAML)
