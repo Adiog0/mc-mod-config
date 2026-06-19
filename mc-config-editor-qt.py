@@ -20,8 +20,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # PyQt6
-from PyQt6.QtCore import Qt, QLocale, QSettings, QSize, QTimer, QTranslator
-from PyQt6.QtGui import QAction, QIcon, QPixmap
+from PyQt6.QtCore import Qt, QLocale, QSettings, QSize, QTimer, QTranslator, QUrl
+from PyQt6.QtGui import QAction, QDesktopServices, QIcon, QPixmap
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PyQt6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
@@ -33,6 +34,10 @@ from PyQt6.QtWidgets import (
 # ── Logging ─────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+
+VERSION = "1.1.1"
+GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
+GITHUB_RELEASES_URL = "https://github.com/Adiog0/mc-mod-config/releases"
 LOG_DIR = SCRIPT_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR / f"{datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')}.log"
@@ -309,7 +314,7 @@ class ConfigFile:
 
     @property
     def is_structured(self) -> bool:
-        return self.fmt in ("toml", "json", "json5", "yaml")
+        return self.fmt in ("toml", "json", "json5", "yaml", "properties", "snbt", "ini", "cfg")
 
     def parse(self) -> None:
         if self.parsed_ok:
@@ -326,6 +331,10 @@ class ConfigFile:
             "json": self._parse_json,
             "json5": self._parse_json5,
             "yaml": self._parse_yaml,
+            "properties": self._parse_properties,
+            "snbt": self._parse_snbt,
+            "ini": self._parse_ini,
+            "cfg": self._parse_cfg,
         }
         parser = parsers.get(self.fmt)
         if parser:
@@ -375,6 +384,74 @@ class ConfigFile:
             self.parsed_ok = False
             self.parse_error = "YAML error: " + str(e)
 
+    def _parse_properties(self, raw: str) -> None:
+        data: Dict[str, str] = {}
+        try:
+            for line in raw.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or line.startswith("!"):
+                    continue
+                if "=" in line:
+                    key, val = line.split("=", 1)
+                elif ":" in line:
+                    key, val = line.split(":", 1)
+                else:
+                    continue
+                data[key.strip()] = val.strip()
+            self.parsed_data = data
+            self._modified_data = data
+            self.parsed_ok = True
+        except Exception as e:
+            self.parsed_ok = False
+            self.parse_error = "Properties error: " + str(e)
+
+    def _parse_snbt(self, raw: str) -> None:
+        import re as _re
+        cleaned = raw
+        # Strip Minecraft SNBT type suffixes: 1.0d, 40b, 2.5f, 100L, 3s
+        cleaned = _re.sub(r'(\d+(?:\.\d+)?)\s*[bBsSlLfFdD](?=[\s,\]\n\r}])', r'\1', cleaned)
+        try:
+            import pyjson5
+            self.parsed_data = pyjson5.loads(cleaned)
+            self._modified_data = self.parsed_data
+            self.parsed_ok = True
+        except Exception:
+            try:
+                self.parsed_data = json.loads(cleaned)
+                self._modified_data = self.parsed_data
+                self.parsed_ok = True
+            except Exception as e:
+                self.parsed_ok = False
+                self.parse_error = "SNBT error: " + str(e)
+
+    def _parse_ini(self, raw: str) -> None:
+        data: Dict[str, Dict[str, str]] = {}
+        current_section = "__root__"
+        data[current_section] = {}
+        try:
+            for line in raw.splitlines():
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or stripped.startswith(";"):
+                    continue
+                if stripped.startswith("[") and stripped.endswith("]"):
+                    current_section = stripped[1:-1].strip()
+                    if current_section not in data:
+                        data[current_section] = {}
+                    continue
+                if "=" in stripped:
+                    key, val = stripped.split("=", 1)
+                    data[current_section][key.strip()] = val.strip()
+            self.parsed_data = data
+            self._modified_data = data
+            self.parsed_ok = True
+        except Exception as e:
+            self.parsed_ok = False
+            self.parse_error = "INI error: " + str(e)
+
+    def _parse_cfg(self, raw: str) -> None:
+        self.parsed_ok = False
+        self.parse_error = "CFG format uses raw editor"
+
     def get_value(self, key_path: List[str]) -> Any:
         if not self.parsed_ok or not self.is_structured:
             return None
@@ -409,6 +486,9 @@ class ConfigFile:
             "json": self._serialize_json,
             "json5": self._serialize_json5,
             "yaml": self._serialize_yaml,
+            "properties": self._serialize_properties,
+            "snbt": self._serialize_snbt,
+            "ini": self._serialize_ini,
         }
         serializer = serializers.get(self.fmt)
         return serializer() if serializer else None
@@ -435,6 +515,31 @@ class ConfigFile:
     def _serialize_yaml(self) -> str:
         import yaml
         return yaml.dump(self._modified_data, default_flow_style=False, allow_unicode=True)
+
+    def _serialize_properties(self) -> str:
+        return "\n".join(f"{k}={v}" for k, v in self._modified_data.items()) + "\n"
+
+    def _serialize_snbt(self) -> Optional[str]:
+        try:
+            import pyjson5
+            return pyjson5.dumps(self._modified_data, indent=2, ensure_ascii=False)
+        except Exception:
+            try:
+                return json.dumps(self._modified_data, indent=2, ensure_ascii=False)
+            except Exception:
+                return None
+
+    def _serialize_ini(self) -> str:
+        lines = []
+        for section, items in self._modified_data.items():
+            if section == "__root__":
+                for k, v in items.items():
+                    lines.append(f"{k} = {v}")
+            else:
+                lines.append(f"[{section}]")
+                for k, v in items.items():
+                    lines.append(f"{k} = {v}")
+        return "\n".join(lines) + "\n"
 
     def backup(self) -> Optional[Path]:
         bak_path = self.path.with_name(f"{self.path.name}.bak.{format_timestamp()}")
@@ -802,14 +907,22 @@ class EditorPanel(QWidget):
         self._modified = False
         self._clear_widgets()
 
+        if not cf.parsed_ok:
+            cf.parse()
+
+        if cf.parse_error and cf.fmt in ("snbt", "cfg"):
+            self._placeholder.setVisible(False)
+            self._tabs.setVisible(True)
+            self._raw_editor.blockSignals(True)
+            self._raw_editor.setPlainText(cf.raw_content())
+            self._raw_editor.blockSignals(False)
+            self._show_raw_in_visual(cf.raw_content())
+            self._tabs.setCurrentIndex(0)
+            return
+
         if cf.parse_error:
             self._show_error(cf)
             return
-        if not cf.parsed_ok:
-            cf.parse()
-            if cf.parse_error:
-                self._show_error(cf)
-                return
 
         self._placeholder.setVisible(False)
         self._tabs.setVisible(True)
@@ -823,6 +936,22 @@ class EditorPanel(QWidget):
         else:
             self._raw_editor.setPlainText(cf.raw_content())
             self._tabs.setCurrentIndex(1)
+
+    def _show_raw_in_visual(self, content: str) -> None:
+        editor = QTextEdit()
+        editor.setObjectName("rawVisualEditor")
+        editor.setPlainText(content)
+        editor.setStyleSheet("color: #e0ddd8; background-color: #1e1c1a;")
+        editor.setMinimumHeight(200)
+        editor.textChanged.connect(lambda: self._on_raw_visual_changed(editor))
+        self._scroll_layout.addWidget(editor)
+
+    def _on_raw_visual_changed(self, editor: QTextEdit) -> None:
+        if self.current_file and self.current_file.fmt in ("snbt", "cfg"):
+            self.current_file.set_raw_content(editor.toPlainText())
+            self._modified = True
+            if self.on_modified:
+                self.on_modified()
 
     def _clear_widgets(self) -> None:
         for pw in self._param_widgets:
@@ -1094,6 +1223,8 @@ class MainWindow(QMainWindow):
                 log.info("Nenhuma instancia salva ou caminho invalido")
                 QTimer.singleShot(300, self._open_instance)
 
+        QTimer.singleShot(3000, self._check_for_updates)
+
     def _build_menubar(self) -> None:
         menu = self.menuBar()
 
@@ -1300,6 +1431,45 @@ class MainWindow(QMainWindow):
         else:
             subprocess.Popen([sys.executable] + sys.argv)
             QApplication.quit()
+
+    def _check_for_updates(self) -> None:
+        self._nam = QNetworkAccessManager(self)
+        self._nam.finished.connect(self._on_update_check)
+        req = QNetworkRequest(QUrl(GITHUB_RELEASES_API))
+        req.setTransferTimeout(8000)
+        req.setRawHeader(b"Accept", b"application/vnd.github+json")
+        self._nam.get(req)
+
+    def _on_update_check(self, reply: QNetworkReply) -> None:
+        if reply.error() != QNetworkReply.NetworkError.NoError:
+            log.info("Update check: network error or offline")
+            reply.deleteLater()
+            return
+        try:
+            data = json.loads(bytes(reply.readAll()).decode())
+            latest = data.get("tag_name", "").lstrip("v")
+            if not latest:
+                reply.deleteLater()
+                return
+            current_parts = [int(x) for x in VERSION.split(".")]
+            latest_parts = [int(x) for x in latest.split(".")]
+            if latest_parts > current_parts:
+                answer = QMessageBox.question(
+                    self,
+                    self.tr("Nova versao disponivel"),
+                    self.tr("Ha uma nova versao disponivel: v%1\n\n"
+                           "Deseja abrir a pagina de downloads?").replace("%1", latest),
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if answer == QMessageBox.StandardButton.Yes:
+                    QDesktopServices.openUrl(QUrl(GITHUB_RELEASES_URL))
+            else:
+                log.info("Update check: running latest version")
+        except Exception as e:
+            log.info("Update check: failed to parse response (%s)", e)
+        finally:
+            reply.deleteLater()
 
     # ── Instance loading ─────────────────────────────────────────────
 
