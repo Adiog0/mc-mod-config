@@ -914,8 +914,7 @@ class EditorPanel(QWidget):
         container_layout.addWidget(content)
         self._scroll_layout.addWidget(container)
 
-    @staticmethod
-    def _toggle_section(btn: QPushButton, content: QWidget) -> None:
+    def _toggle_section(self, btn: QPushButton, content: QWidget) -> None:
         visible = content.isVisible()
         content.setVisible(not visible)
         name = btn.property("mc_name")
