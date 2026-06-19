@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QApplication, QCheckBox, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
     QMessageBox, QPushButton, QScrollArea, QSizePolicy,
-    QSpinBox, QSplitter, QStatusBar, QTextEdit, QTreeWidget,
+    QSpinBox, QSplitter, QStatusBar, QTabWidget, QTextEdit, QTreeWidget,
     QTreeWidgetItem, QVBoxLayout, QWidget, QDoubleSpinBox,
 )
 
@@ -516,6 +516,44 @@ class ConfigScanner:
 # ── PyQt6 GUI ──────────────────────────────────────────────────────────
 
 
+class ToggleSwitch(QWidget):
+    """Toggle switch customizado (substitui QCheckBox para booleanos)."""
+    toggled = None  # type: ignore
+
+    def __init__(self, checked=False, parent=None):
+        super().__init__(parent)
+        self._checked = checked
+        self.setFixedSize(44, 24)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setObjectName("toggleSwitch")
+        self._track = QWidget(self)
+        self._track.setObjectName("toggleTrack")
+        self._track.setGeometry(0, 4, 44, 16)
+        self._knob = QWidget(self)
+        self._knob.setObjectName("toggleKnob")
+        self._update_knob()
+
+    def _update_knob(self):
+        x = 22 if self._checked else 2
+        self._knob.setGeometry(x, 0, 20, 24)
+
+    def isChecked(self):
+        return self._checked
+
+    def setChecked(self, checked):
+        self._checked = checked
+        self._update_knob()
+
+    def mouseReleaseEvent(self, event):
+        self._checked = not self._checked
+        self._update_knob()
+        if hasattr(self, "_callback"):
+            self._callback()
+
+    def set_callback(self, fn):
+        self._callback = fn
+
+
 class ParameterWidget(QWidget):
     """Widget que representa um parametro unico no editor."""
 
@@ -529,77 +567,95 @@ class ParameterWidget(QWidget):
         self._on_delete = on_delete
         self._old_value = value
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 4, 8, 4)
+        # Card frame
+        self.setObjectName("paramCard")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 10, 14, 10)
+        layout.setSpacing(6)
 
-        # Type label
+        # Header row: name + type
+        header = QHBoxLayout()
+        header.setSpacing(8)
+
+        name_lbl = QLabel(key)
+        name_lbl.setObjectName("paramName")
+        header.addWidget(name_lbl)
+
         type_hint = ""
         if isinstance(value, bool):
-            type_hint = "[bool]"
+            type_hint = "bool"
         elif isinstance(value, int):
-            type_hint = "[int]"
+            type_hint = "int"
         elif isinstance(value, float):
-            type_hint = "[float]"
+            type_hint = "float"
         elif isinstance(value, str):
-            type_hint = "[text]"
+            type_hint = "text"
         elif isinstance(value, list):
-            type_hint = f"[list ({len(value)})]"
+            type_hint = f"list ({len(value)} itens)"
 
-        label_text = f"{key}  {type_hint}"
-        self.label = QLabel(label_text)
-        self.label.setObjectName("paramLabel")
-        self.label.setMinimumWidth(240)
-        layout.addWidget(self.label)
+        if type_hint:
+            type_lbl = QLabel(f"[{type_hint}]")
+            type_lbl.setObjectName("paramType")
+            header.addWidget(type_lbl)
 
-        # Input widget based on type
-        if isinstance(value, bool):
-            self._widget = QCheckBox()
-            self._widget.setChecked(bool(value))
-            self._widget.stateChanged.connect(self._emit_change)
-            layout.addWidget(self._widget)
-            layout.addStretch()
-        elif isinstance(value, int):
-            self._widget = self._make_spin_box(int(value), is_float=False)
-            layout.addWidget(self._widget)
-            layout.addStretch()
-        elif isinstance(value, float):
-            self._widget = self._make_spin_box(float(value), is_float=True)
-            layout.addWidget(self._widget)
-            layout.addStretch()
-        elif isinstance(value, str):
-            if len(value) > 60:
-                self._widget = QTextEdit()
-                self._widget.setPlainText(str(value))
-                self._widget.setFixedHeight(80)
-                self._widget.setMinimumWidth(300)
-                self._widget.textChanged.connect(lambda: self._emit_change())
-                layout.addWidget(self._widget)
-            else:
-                self._widget = QLineEdit(str(value))
-                self._widget.setMinimumWidth(200)
-                self._widget.textChanged.connect(lambda txt: self._emit_change())
-                layout.addWidget(self._widget)
-        elif isinstance(value, list):
-            self._widget = QTextEdit()
-            self._widget.setPlainText("\n".join(str(v) for v in value))
-            self._widget.setFixedHeight(80)
-            self._widget.setMinimumWidth(300)
-            self._widget.textChanged.connect(lambda: self._emit_change())
-            layout.addWidget(self._widget)
-        else:
-            self._widget = QLineEdit(str(value) if value is not None else "")
-            self._widget.setMinimumWidth(200)
-            self._widget.textChanged.connect(lambda txt: self._emit_change())
-            layout.addWidget(self._widget)
+        header.addStretch()
 
         if self._on_delete is not None:
             self._btn_del = QPushButton("✕")
             self._btn_del.setObjectName("btnDeleteParam")
             icon_button(self._btn_del, "delete")
-            self._btn_del.setFixedSize(28, 28)
+            self._btn_del.setFixedSize(24, 24)
             self._btn_del.setToolTip(f"Remover '{self.key}'")
             self._btn_del.clicked.connect(lambda: self._on_delete(self.key_path))
-            layout.addWidget(self._btn_del)
+            header.addWidget(self._btn_del)
+
+        layout.addLayout(header)
+
+        # Input row
+        input_row = QHBoxLayout()
+        input_row.setSpacing(8)
+
+        if isinstance(value, bool):
+            self._widget = ToggleSwitch(checked=bool(value))
+            self._widget.set_callback(self._emit_change)
+            input_row.addWidget(self._widget)
+            input_row.addStretch()
+        elif isinstance(value, int):
+            self._widget = self._make_spin_box(int(value), is_float=False)
+            input_row.addWidget(self._widget)
+            input_row.addStretch()
+        elif isinstance(value, float):
+            self._widget = self._make_spin_box(float(value), is_float=True)
+            input_row.addWidget(self._widget)
+            input_row.addStretch()
+        elif isinstance(value, str):
+            if len(value) > 60:
+                self._widget = QTextEdit()
+                self._widget.setPlainText(str(value))
+                self._widget.setObjectName("paramTextArea")
+                self._widget.setFixedHeight(80)
+                self._widget.textChanged.connect(lambda: self._emit_change())
+            else:
+                self._widget = QLineEdit(str(value))
+                self._widget.setObjectName("paramInput")
+                self._widget.setMinimumHeight(32)
+                self._widget.textChanged.connect(lambda txt: self._emit_change())
+            input_row.addWidget(self._widget)
+        elif isinstance(value, list):
+            self._widget = QTextEdit()
+            self._widget.setPlainText("\n".join(str(v) for v in value))
+            self._widget.setObjectName("paramTextArea")
+            self._widget.setFixedHeight(80)
+            self._widget.textChanged.connect(lambda: self._emit_change())
+            input_row.addWidget(self._widget)
+        else:
+            self._widget = QLineEdit(str(value) if value is not None else "")
+            self._widget.setObjectName("paramInput")
+            self._widget.setMinimumHeight(32)
+            self._widget.textChanged.connect(lambda txt: self._emit_change())
+            input_row.addWidget(self._widget)
+
+        layout.addLayout(input_row)
 
     def _make_spin_box(self, value, is_float=False):
         """Cria widget numerico com botoes +/- visiveis."""
@@ -647,7 +703,7 @@ class ParameterWidget(QWidget):
         return w
 
     def _emit_change(self) -> None:
-        if isinstance(self._widget, QCheckBox):
+        if isinstance(self._widget, ToggleSwitch):
             new_val = self._widget.isChecked()
         elif hasattr(self._widget, "_is_spin_widget"):
             new_val = self._widget.value()
@@ -673,21 +729,35 @@ class EditorPanel(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # Scroll area
+        # Tabs: Visual | Raw
+        self._tabs = QTabWidget()
+        self._tabs.setObjectName("editorTabs")
+        self._layout.addWidget(self._tabs)
+
+        # Tab 1: Visual editor
+        self._visual_tab = QWidget()
+        visual_layout = QVBoxLayout(self._visual_tab)
+        visual_layout.setContentsMargins(0, 0, 0, 0)
         self._scroll = QScrollArea()
         self._scroll.setWidgetResizable(True)
         self._scroll_widget = QWidget()
         self._scroll_layout = QVBoxLayout(self._scroll_widget)
+        self._scroll_layout.setContentsMargins(12, 12, 12, 12)
+        self._scroll_layout.setSpacing(10)
         self._scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._scroll.setWidget(self._scroll_widget)
-        self._layout.addWidget(self._scroll)
+        visual_layout.addWidget(self._scroll)
+        self._tabs.addTab(self._visual_tab, "📋 Visual")
 
-        # Raw text editor (for non-structured formats)
+        # Tab 2: Raw editor
+        self._raw_tab = QWidget()
+        raw_layout = QVBoxLayout(self._raw_tab)
+        raw_layout.setContentsMargins(0, 0, 0, 0)
         self._raw_editor = QTextEdit()
         self._raw_editor.setObjectName("rawEditor")
-        self._raw_editor.setVisible(False)
         self._raw_editor.textChanged.connect(self._on_raw_changed)
-        self._layout.addWidget(self._raw_editor)
+        raw_layout.addWidget(self._raw_editor)
+        self._tabs.addTab(self._raw_tab, "📄 Raw")
 
         # Placeholder
         self._placeholder = QLabel(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
@@ -709,16 +779,18 @@ class EditorPanel(QWidget):
                 self._show_error(cf)
                 return
 
+        self._placeholder.setVisible(False)
+        self._tabs.setVisible(True)
+
         if cf.is_structured:
-            self._raw_editor.setVisible(False)
-            self._scroll.setVisible(True)
-            self._placeholder.setVisible(False)
+            self._raw_editor.blockSignals(True)
+            self._raw_editor.setPlainText(cf.raw_content())
+            self._raw_editor.blockSignals(False)
+            self._tabs.setCurrentIndex(0)
             self._build_structured(cf)
         else:
-            self._scroll.setVisible(False)
-            self._placeholder.setVisible(False)
-            self._raw_editor.setVisible(True)
             self._raw_editor.setPlainText(cf.raw_content())
+            self._tabs.setCurrentIndex(1)
 
     def _clear_widgets(self) -> None:
         for pw in self._param_widgets:
@@ -731,8 +803,7 @@ class EditorPanel(QWidget):
                 item.widget().deleteLater()
 
     def _show_error(self, cf: ConfigFile) -> None:
-        self._scroll.setVisible(False)
-        self._raw_editor.setVisible(False)
+        self._tabs.setVisible(False)
         self._placeholder.setText(f"{icon_text('error')} Erro: {cf.parse_error}")
         self._placeholder.setObjectName("editorError")
         self._placeholder.setVisible(True)
@@ -1194,8 +1265,7 @@ class MainWindow(QMainWindow):
 
         # Limpa editor da instancia anterior
         self.editor._clear_widgets()
-        self.editor._raw_editor.setVisible(False)
-        self.editor._scroll.setVisible(False)
+        self.editor._tabs.setVisible(False)
         self.editor._placeholder.setText(f"{icon_text("wrench")}Selecione um arquivo de configuracao na arvore ao lado")
         self.editor._placeholder.setObjectName("editorPlaceholder")
         self.editor._placeholder.setVisible(True)
@@ -1230,6 +1300,7 @@ class MainWindow(QMainWindow):
         if self._instance_path:
             self._load_configs(self._instance_path, save=False)
             self.editor._clear_widgets()
+            self.editor._tabs.setVisible(False)
             self.editor._placeholder.setVisible(True)
 
     # ── Tree ─────────────────────────────────────────────────────────
