@@ -1752,7 +1752,7 @@ class MainWindow(QMainWindow):
             return
         bak = self._current_file.backup()
         if bak:
-            self.status.showMessage(icon_text("check") + " " + self.tr("Backup: %1 salvo em %2").replace("%1", str(bak.name)).replace("%2", str(bak.parent)))
+            self.status.showMessage(icon_text("check") + " " + self.tr("Backup salvo em: %1").replace("%1", str(bak)))
         else:
             self.status.showMessage(icon_text("error") + " " + self.tr("Erro ao criar backup."))
 

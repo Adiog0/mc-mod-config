@@ -353,8 +353,8 @@ Deseja salvar antes de continuar?</source>
     </message>
     <message>
         <location filename="../mc-config-editor-qt.py" line="1755" />
-        <source>Backup: %1 salvo em %2</source>
-        <translation>Respaldo: %1 guardado en %2</translation>
+        <source>Backup salvo em: %1</source>
+        <translation>Respaldo guardado en: %1</translation>
     </message>
     <message>
         <location filename="../mc-config-editor-qt.py" line="1724" />
