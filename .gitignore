@@ -30,10 +30,15 @@ Thumbs.db
 # App-specific — nunca subir
 *.bak
 *.backup
+*.tar.gz
+*.zip
 
 # Configuracoes do usuario (locais, privadas)
 settings.json
 style/custom.css
+
+# Plan artifacts (.omo)
+.omo/
 
 # Dados de teste
 *_test_*

@@ -25,6 +25,99 @@ _IS_LINUX = sys.platform.startswith("linux")
 _IN_VENV = sys.prefix != sys.base_prefix
 
 
+# ── i18n ─────────────────────────────────────────────────────────────────
+
+def _detect_lang() -> str:
+    import locale
+    try:
+        loc = locale.getlocale()[0] or ""
+    except Exception:
+        loc = ""
+    if loc.startswith("en"):
+        return "en"
+    if loc.startswith("es"):
+        return "es"
+    return "pt_BR"
+
+_LANG = _detect_lang()
+
+_TRANSLATIONS: dict = {
+    "en": {
+        "Instalado com sucesso": "Installed successfully",
+        "Instalado (--break-system-packages)": "Installed (--break-system-packages)",
+        "Erro desconhecido do pip": "Unknown pip error",
+        "pip nao encontrado. Certifique-se de que o Python esta instalado com pip.":
+            "pip not found. Make sure Python is installed with pip.",
+        "Timeout ao instalar (verifique sua conexao de internet)":
+            "Installation timeout (check your internet connection).",
+        "Dependencias Faltando": "Missing Dependencies",
+        "As seguintes dependencias nao foram encontradas:\n\n"
+        "  \u2726 {names}\n\n"
+        "Deseja instalar automaticamente com pip?":
+            "The following dependencies were not found:\n\n"
+            "  \u2726 {names}\n\n"
+            "Would you like to install them automatically with pip?",
+        "Erro na Instalacao": "Installation Error",
+        "Falha ao instalar:\n\n{detail}\n\n"
+        "Instale manualmente:\n"
+        "  pip install {pkgs}":
+            "Installation failed:\n\n{detail}\n\n"
+            "Please install manually:\n"
+            "  pip install {pkgs}",
+        "Ainda nao encontrado apos instalar:\n"
+        "  {mods}\n\n"
+        "Instale manualmente e tente novamente.":
+            "Still not found after installation:\n"
+            "  {mods}\n\n"
+            "Please install manually and try again.",
+        "Instalacao Concluida": "Installation Complete",
+        "Todas as dependencias foram instaladas.\nO app sera iniciado agora.":
+            "All dependencies have been installed.\nThe app will start now.",
+    },
+    "es": {
+        "Instalado com sucesso": "Instalado exitosamente",
+        "Instalado (--break-system-packages)": "Instalado (--break-system-packages)",
+        "Erro desconhecido do pip": "Error desconocido de pip",
+        "pip nao encontrado. Certifique-se de que o Python esta instalado com pip.":
+            "pip no encontrado. Asegúrese de que Python esté instalado con pip.",
+        "Timeout ao instalar (verifique sua conexao de internet)":
+            "Timeout de instalación (verifique su conexión a internet).",
+        "Dependencias Faltando": "Dependencias Faltantes",
+        "As seguintes dependencias nao foram encontradas:\n\n"
+        "  \u2726 {names}\n\n"
+        "Deseja instalar automaticamente com pip?":
+            "Las siguientes dependencias no fueron encontradas:\n\n"
+            "  \u2726 {names}\n\n"
+            "¿Desea instalarlas automáticamente con pip?",
+        "Erro na Instalacao": "Error de Instalación",
+        "Falha ao instalar:\n\n{detail}\n\n"
+        "Instale manualmente:\n"
+        "  pip install {pkgs}":
+            "Error al instalar:\n\n{detail}\n\n"
+            "Instale manualmente:\n"
+            "  pip install {pkgs}",
+        "Ainda nao encontrado apos instalar:\n"
+        "  {mods}\n\n"
+        "Instale manualmente e tente novamente.":
+            "Aún no encontrado después de instalar:\n"
+            "  {mods}\n\n"
+            "Instale manualmente e intente nuevamente.",
+        "Instalacao Concluida": "Instalación Completa",
+        "Todas as dependencias foram instaladas.\nO app sera iniciado agora.":
+            "Todas las dependencias han sido instaladas.\nLa aplicación se iniciará ahora.",
+    },
+}
+
+def _(text: str, **kwargs) -> str:
+    if _LANG in _TRANSLATIONS and text in _TRANSLATIONS[_LANG]:
+        result = _TRANSLATIONS[_LANG][text]
+    else:
+        result = text
+    if kwargs:
+        result = result.format(**kwargs)
+    return result
+
+
 def _pip_install_cmd(packages):
     """Retorna o comando pip apropriado para o SO e ambiente."""
     cmd = [sys.executable, "-m", "pip", "install"]
@@ -42,19 +135,19 @@ def _try_install(packages):
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         if result.returncode == 0:
-            return True, "Instalado com sucesso"
+            return True, _("Instalado com sucesso")
         stderr = result.stderr.strip()
         if _IS_LINUX and not _IN_VENV and "externally-managed" in stderr:
             cmd2 = [sys.executable, "-m", "pip", "install", "--break-system-packages"] + packages
             r2 = subprocess.run(cmd2, capture_output=True, text=True, timeout=120)
             if r2.returncode == 0:
-                return True, "Instalado (--break-system-packages)"
+                return True, _("Instalado (--break-system-packages)")
             return False, r2.stderr.strip()[-200:]
-        return False, stderr[-200:] if stderr else "Erro desconhecido do pip"
+        return False, stderr[-200:] if stderr else _("Erro desconhecido do pip")
     except FileNotFoundError:
-        return False, "pip nao encontrado. Certifique-se de que o Python esta instalado com pip."
+        return False, _("pip nao encontrado. Certifique-se de que o Python esta instalado com pip.")
     except subprocess.TimeoutExpired:
-        return False, "Timeout ao instalar (verifique sua conexao de internet)"
+        return False, _("Timeout ao instalar (verifique sua conexao de internet)")
 
 
 # ── Check dependencies ──────────────────────────────────────────────────
@@ -85,20 +178,20 @@ if _MISSING_PKGS:
 
     names = ", ".join(_MISSING_NAMES)
     answer = messagebox.askyesno(
-        "Dependencias Faltando",
-        f"As seguintes dependencias nao foram encontradas:\n\n"
-        f"  \u2726 {names}\n\n"
-        f"Deseja instalar automaticamente com pip?",
+        _("Dependencias Faltando"),
+        _("As seguintes dependencias nao foram encontradas:\n\n"
+          "  \u2726 {names}\n\n"
+          "Deseja instalar automaticamente com pip?", names=names),
     )
 
     if answer:
         ok, detail = _try_install(_MISSING_PKGS)
         if not ok:
             messagebox.showerror(
-                "Erro na Instalacao",
-                f"Falha ao instalar:\n\n{detail}\n\n"
-                f"Instale manualmente:\n"
-                f"  pip install {' '.join(_MISSING_PKGS)}",
+                _("Erro na Instalacao"),
+                _("Falha ao instalar:\n\n{detail}\n\n"
+                  "Instale manualmente:\n"
+                  "  pip install {pkgs}", detail=detail, pkgs=' '.join(_MISSING_PKGS)),
             )
             root.destroy()
             sys.exit(1)
@@ -112,17 +205,17 @@ if _MISSING_PKGS:
 
         if still_missing:
             messagebox.showerror(
-                "Erro na Instalacao",
-                f"Ainda nao encontrado apos instalar:\n"
-                f"  {', '.join(still_missing)}\n\n"
-                f"Instale manualmente e tente novamente.",
+                _("Erro na Instalacao"),
+                _("Ainda nao encontrado apos instalar:\n"
+                  "  {mods}\n\n"
+                  "Instale manualmente e tente novamente.", mods=', '.join(still_missing)),
             )
             root.destroy()
             sys.exit(1)
 
         messagebox.showinfo(
-            "Instalacao Concluida",
-            "Todas as dependencias foram instaladas.\nO app sera iniciado agora.",
+            _("Instalacao Concluida"),
+            _("Todas as dependencias foram instaladas.\nO app sera iniciado agora."),
         )
         root.destroy()
     else:
