@@ -575,8 +575,9 @@ class ParameterWidget(QFrame):
 
         # Card frame
         self.setObjectName("paramCard")
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 10, 14, 10)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
 
         # Header row: name + type
@@ -666,7 +667,7 @@ class ParameterWidget(QFrame):
     def _make_spin_box(self, value, is_float=False):
         """Cria widget numerico com botoes +/- visiveis."""
         w = QWidget()
-        w.setFixedWidth(240)
+        w.setMaximumWidth(220)
         layout = QHBoxLayout(w)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(2)
