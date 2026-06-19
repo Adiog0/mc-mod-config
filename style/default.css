@@ -98,7 +98,7 @@ QPushButton#btnDeleteParam { background-color: #a05555; color: #f0ede8; min-widt
 QPushButton#btnDeleteParam:hover { background-color: #b06565; }
 QPushButton#btnDeleteParam:pressed { background-color: #804040; border-top-color: #5a2a2a; border-left-color: #5a2a2a; border-right-color: #c07070; border-bottom-color: #c07070; border-bottom-width: 2px; }
 
-QPushButton#spinBtn { background-color: #5a5650; color: #e0ddd8; min-width: 28px; max-width: 28px; min-height: 28px; max-height: 28px; padding: 0px; font-size: 15px; font-weight: bold; border-top: 2px solid #8a857a; border-left: 2px solid #8a857a; border-right: 2px solid #353330; border-bottom: 2px solid #353330; border-radius: 4px; }
+QPushButton#spinBtn { background-color: #5a5650; color: #e0ddd8; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; padding: 0px; font-size: 15px; font-weight: bold; border-top: 2px solid #8a857a; border-left: 2px solid #8a857a; border-right: 2px solid #353330; border-bottom: 2px solid #353330; border-radius: 4px; }
 QPushButton#spinBtn:hover { background-color: #6a6660; color: #8ab8b8; }
 QPushButton#spinBtn:pressed { background-color: #4a4845; border-top: 2px solid #353330; border-left: 2px solid #353330; border-right: 2px solid #8a857a; border-bottom: 2px solid #8a857a; }
 

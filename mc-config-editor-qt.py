@@ -667,16 +667,17 @@ class ParameterWidget(QFrame):
     def _make_spin_box(self, value, is_float=False):
         """Cria widget numerico com botoes +/- visiveis."""
         w = QWidget()
-        w.setMaximumWidth(220)
         layout = QHBoxLayout(w)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(2)
 
         entry = QLineEdit(str(value))
         entry.setObjectName("spinValue")
+        entry.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         entry.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        entry.setFixedHeight(28)
-        layout.addWidget(entry)
+        entry.setMinimumHeight(28)
+        entry.setMaximumHeight(28)
+        layout.addWidget(entry, 1)
 
         delta = 0.01 if is_float else 1
 
@@ -689,24 +690,17 @@ class ParameterWidget(QFrame):
             entry.setText(str(int(new) if not is_float else round(new, 4)))
             self._emit_change()
 
-        btn_dec = QPushButton("−")
-        btn_dec.setObjectName("spinBtn")
-        btn_dec.setFixedSize(28, 28)
-        btn_dec.clicked.connect(lambda: _adjust(-delta))
-        layout.addWidget(btn_dec)
-
-        btn_inc = QPushButton("+")
-        btn_inc.setObjectName("spinBtn")
-        btn_inc.setFixedSize(28, 28)
-        btn_inc.clicked.connect(lambda: _adjust(delta))
-        layout.addWidget(btn_inc)
+        for label, d in [("−", -delta), ("+", delta)]:
+            btn = QPushButton(label)
+            btn.setObjectName("spinBtn")
+            btn.setFixedSize(26, 26)
+            btn.clicked.connect(lambda checked, step=d: _adjust(step))
+            layout.addWidget(btn)
 
         entry.textChanged.connect(lambda: self._emit_change())
-
         w.value = lambda: (float(entry.text()) if is_float else int(entry.text()))
         w.setValue = lambda v: entry.setText(str(v))
         w._is_spin_widget = True
-
         return w
 
     def _emit_change(self) -> None:
