@@ -1,0 +1,95 @@
+name: Build
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════
+  # Linux
+  # ═══════════════════════════════════════════════════════════════════════
+  build-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pyinstaller PyQt6 tomlkit pyjson5 pyyaml
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --noconfirm --log-level=WARN build/build.spec
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-config-editor-linux
+          path: dist/mc-config-editor
+          if-no-files-found: error
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Windows
+  # ═══════════════════════════════════════════════════════════════════════
+  build-windows:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt6 tomlkit pyjson5 pyyaml
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --noconfirm --log-level=WARN build/build.spec
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-config-editor-windows
+          path: dist/mc-config-editor.exe
+          if-no-files-found: error
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # macOS
+  # ═══════════════════════════════════════════════════════════════════════
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install pyinstaller PyQt6 tomlkit pyjson5 pyyaml
+
+      - name: Generate .icns icon
+        run: |
+          bash build/generate-icns.sh
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --noconfirm --log-level=WARN build/build.spec
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mc-config-editor-macos
+          path: dist/mc-config-editor
+          if-no-files-found: error

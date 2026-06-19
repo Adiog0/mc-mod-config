@@ -27,16 +27,44 @@ Funciona com qualquer instância Minecraft (vanilla, Forge, Fabric, PrismLaunche
 
 ---
 
+## ⬇️ Download rápido (standalone)
+
+Baixe o executável pronto para o seu sistema — **não precisa de Python nem pip**.
+
+👉 **[GitHub Releases](https://github.com/Adiog0/mc-mod-config/releases)**
+
+| Sistema | Arquivo |
+|---|---|
+| 🐧 Linux | `mc-config-editor` |
+| 🪟 Windows | `mc-config-editor.exe` |
+| 🍎 macOS | `mc-config-editor-macos` |
+
+> **Linux**: dê permissão de execução — `chmod +x mc-config-editor`  
+> **macOS**: após baixar, execute `xattr -cr mc-config-editor-macos` (Gatekeeper)
+
+---
+
 ## 🚀 Como usar
 
-### Linux / macOS
+### Standalone (recomendado)
+```bash
+./mc-config-editor                          # seletor de instância
+./mc-config-editor -i "caminho/instancia"   # direto
+```
+No Windows, renomeie `mc-config-editor.exe` ou execute direto:
+```cmd
+mc-config-editor.exe
+mc-config-editor.exe -i "C:\caminho\instancia"
+```
+
+### Linux / macOS (fonte)
 ```bash
 cd mc-mod-config
 ./mc-config-editor                          # seletor de instância
 ./mc-config-editor -i "caminho/instancia"   # direto
 ```
 
-### Windows
+### Windows (fonte)
 ```cmd
 cd mc-mod-config
 mc-config-editor.bat                        # seletor de instância
@@ -74,6 +102,31 @@ source venv/bin/activate        # Linux/macOS
 venv\Scripts\activate           # Windows
 pip install PyQt6 tomlkit pyjson5 pyyaml
 ```
+
+---
+
+## 🔧 Compilar o executável (build)
+
+Se quiser gerar seu próprio executável standalone:
+
+```bash
+# Instalar dependências de build
+pip install pyinstaller PyQt6 tomlkit pyjson5 pyyaml
+
+# Build
+./build/build.sh            # Linux/macOS
+build\build.bat             # Windows
+
+# Ou direto com PyInstaller:
+pyinstaller build/build.spec
+```
+
+> O executável sai em `dist/mc-config-editor` (ou `.exe` no Windows).  
+> O binário já contém ícones, CSS, traduções (.qm) e todas as dependências Python — **zero instalação extra**.
+
+### Build automatizado (CI/CD)
+
+Ao criar uma **release** no GitHub (`v*.*.*`), um workflow do GitHub Actions compila automaticamente para Linux, Windows e macOS e anexa os binários à release.
 
 ---
 
@@ -151,6 +204,10 @@ mc-mod-config/
 ├── mc-config-editor-qt.py    ← aplicacao principal (PyQt6)
 ├── README.md                 ← esta documentacao
 ├── .gitignore
+├── build/                    ← config de build PyInstaller
+│   ├── build.spec            ←   spec PyInstaller
+│   ├── build.sh              ←   script de build Linux/macOS
+│   └── build.bat             ←   script de build Windows
 ├── icons/                    ← icones PNG (opcionais)
 │   └── README.txt            ← referencia dos icones
 ├── style/
