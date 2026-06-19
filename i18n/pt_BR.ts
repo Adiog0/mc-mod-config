@@ -347,8 +347,8 @@ Deseja salvar antes de continuar?</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../mc-config-editor-qt.py" line="1722" />
-        <source>Backup: %1</source>
+        <location filename="../mc-config-editor-qt.py" line="1755" />
+        <source>Backup: %1 salvo em %2</source>
         <translation type="unfinished" />
     </message>
     <message>
