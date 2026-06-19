@@ -1562,6 +1562,8 @@ class MainWindow(QMainWindow):
     # ── Instance loading ─────────────────────────────────────────────
 
     def _open_instance(self) -> None:
+        if not self._confirm_discard_unsaved():
+            return
         initial_dir = str(Path.home())
         settings = load_settings()
         if "last_instance" in settings:
@@ -1630,6 +1632,8 @@ class MainWindow(QMainWindow):
             log.info("Ultima instancia salva: %s", config_dir)
 
     def _reload_all(self) -> None:
+        if not self._confirm_discard_unsaved():
+            return
         if self._instance_path:
             self._load_configs(self._instance_path, save=False)
             self.editor._clear_widgets()
@@ -1672,8 +1676,30 @@ class MainWindow(QMainWindow):
         if not isinstance(cf, ConfigFile):
             return
 
+        if self._current_file and self._current_file is not cf:
+            if not self._confirm_discard_unsaved():
+                return
+
         self._current_file = cf
         self._load_file_into_editor(cf)
+
+    def _confirm_discard_unsaved(self) -> bool:
+        """Returns True if safe to proceed (saved/discarded), False if cancelled."""
+        if not self._current_file or not self.editor.is_modified():
+            return True
+        answer = QMessageBox.question(
+            self,
+            self.tr("Arquivo nao salvo"),
+            self.tr("Voce nao salvou o arquivo %1.\nDeseja salvar antes de continuar?").replace("%1", self._current_file.display_name),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self._save_current()
+            return not self.editor.is_modified()
+        if answer == QMessageBox.StandardButton.No:
+            self._cancel_changes()
+            return True
+        return False
 
     def _on_tree_expand(self, item: QTreeWidgetItem) -> None:
         if item.childCount() == 0:
