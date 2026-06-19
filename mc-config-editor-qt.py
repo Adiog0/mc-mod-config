@@ -35,7 +35,7 @@ from PyQt6.QtWidgets import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
 GITHUB_RELEASES_URL = "https://github.com/Adiog0/mc-mod-config/releases"
 LOG_DIR = SCRIPT_DIR / "logs"
