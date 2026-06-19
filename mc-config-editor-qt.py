@@ -1503,6 +1503,8 @@ class MainWindow(QMainWindow):
         self.status.showMessage(icon_text("check") + " " + self.tr("CSS padrao restaurado"))
 
     def _set_language(self, lang: str) -> None:
+        if not self._confirm_discard_unsaved():
+            return
         data = load_settings()
         data["language"] = lang
         save_settings(data)
@@ -1770,6 +1772,9 @@ class MainWindow(QMainWindow):
         )
 
     def closeEvent(self, event) -> None:
+        if not self._confirm_discard_unsaved():
+            event.ignore()
+            return
         # Save geometry
         settings = load_settings()
         settings["geometry"] = bytes(self.saveGeometry()).hex()
