@@ -19,6 +19,8 @@ build/*
 !build/generate-icns.sh
 !build/mc-config-editor.ico
 !build/icon.icns
+!build/Dockerfile
+!build/docker-build.sh
 
 # Virtualenv
 venv/
