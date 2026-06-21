@@ -1914,7 +1914,7 @@ class MainWindow(QMainWindow):
 
     def _on_update_check(self, reply: QNetworkReply) -> None:
         if reply.error() != QNetworkReply.NetworkError.NoError:
-            log.info("Update check: network error or offline")
+            log.info("Update check: network error or offline (code=%s)", reply.error())
             reply.deleteLater()
             return
         try:
@@ -1923,7 +1923,7 @@ class MainWindow(QMainWindow):
             if not latest:
                 reply.deleteLater()
                 return
-            current_parts = [int(x) for x in VERSION.split(".")]
+            current_parts = [int(x.split("_")[0]) for x in VERSION.split(".")]
             latest_parts = [int(x) for x in latest.split(".")]
             if latest_parts > current_parts:
                 answer = QMessageBox.question(
@@ -1937,7 +1937,7 @@ class MainWindow(QMainWindow):
                 if answer == QMessageBox.StandardButton.Yes:
                     QDesktopServices.openUrl(QUrl(GITHUB_RELEASES_URL))
             else:
-                log.info("Update check: running latest version")
+                log.info("Update check: running latest version (current=%s, latest=%s)", VERSION, latest)
         except Exception as e:
             log.info("Update check: failed to parse response (%s)", e)
         finally:
@@ -2013,6 +2013,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.tr("Minecraft Mod Config Editor \u2014 %1 \u2014 by Makalove").replace("%1", str(inst_name)))
         self.status.showMessage(icon_text("check") + " " + self.tr("%1 mods, %2 arquivos carregados").replace("%1", str(len(self._groups))).replace("%2", str(total)))
         self._update_buttons()
+
+        QTimer.singleShot(2000, self._check_for_updates)
 
         if save:
             set_last_instance(str(config_dir))
