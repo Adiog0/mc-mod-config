@@ -15,6 +15,7 @@ import os
 import platform
 import re
 import shutil
+import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -43,9 +44,26 @@ else:
     SCRIPT_DIR = Path(__file__).resolve().parent
     _MEIPASS_DIR = None
 
-# ── Logging ─────────────────────────────────────────────────────────────
+# ── Version (suffix auto-detected from build-time git branch) ──────────
 
 VERSION = "1.1.5"
+try:
+    if _MEIPASS_DIR is not None:
+        _suffix_path = _MEIPASS_DIR / "version_suffix.txt"
+        if _suffix_path.exists():
+            VERSION += _suffix_path.read_text(encoding="utf-8").strip()
+    else:
+        branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=SCRIPT_DIR, text=True
+        ).strip()
+        if branch == "hml":
+            VERSION += "_hml"
+except Exception:
+    pass
+
+# ── Logging ─────────────────────────────────────────────────────────────
+
 GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
 GITHUB_RELEASES_URL = "https://github.com/Adiog0/mc-mod-config/releases"
 LOG_DIR = SCRIPT_DIR / "logs"

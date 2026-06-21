@@ -93,3 +93,36 @@ jobs:
           name: mc-config-editor-macos
           path: dist/mc-config-editor
           if-no-files-found: error
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Release — attach binaries to GitHub Release
+  # ═══════════════════════════════════════════════════════════════════════
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p dist
+          cp artifacts/mc-config-editor-linux/mc-config-editor dist/mc-config-editor-linux
+          cp artifacts/mc-config-editor-windows/mc-config-editor.exe dist/mc-config-editor-windows.exe
+          cp artifacts/mc-config-editor-macos/mc-config-editor dist/mc-config-editor-macos
+          cd artifacts/mc-config-editor-linux && tar -czf ../../dist/mc-config-editor-linux.tar.gz mc-config-editor
+          cd ../../artifacts/mc-config-editor-macos && tar -czf ../../dist/mc-config-editor-macos.tar.gz mc-config-editor
+          cd ../../artifacts/mc-config-editor-windows && zip ../../dist/mc-config-editor-windows.zip mc-config-editor.exe
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/mc-config-editor-linux
+            dist/mc-config-editor-linux.tar.gz
+            dist/mc-config-editor-windows.exe
+            dist/mc-config-editor-windows.zip
+            dist/mc-config-editor-macos
+            dist/mc-config-editor-macos.tar.gz
