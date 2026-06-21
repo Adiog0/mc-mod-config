@@ -45,7 +45,7 @@ else:
 
 # ── Logging ─────────────────────────────────────────────────────────────
 
-VERSION = "1.1.4_hml"
+VERSION = "1.1.5_hml"
 GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
 GITHUB_RELEASES_URL = "https://github.com/Adiog0/mc-mod-config/releases"
 LOG_DIR = SCRIPT_DIR / "logs"
@@ -703,6 +703,14 @@ class ConfigScanner:
         ".snbt": "snbt", ".ini": "ini",
     }
 
+    SKIP_DIRS = {
+        "saves", "mods", "resourcepacks", "resourcepacks_old",
+        "shaderpacks", "screenshots", "logs", "crash-reports",
+        "crash-reports-archived", "versions", "libraries", "assets",
+        "texturepacks", "texturepacks-old", "blueprints",
+        "structures", "datapacks", "schematics",
+    }
+
     def __init__(self, config_dir: Path) -> None:
         self.config_dir = config_dir.resolve()
         self.groups: Dict[str, ModGroup] = {}
@@ -713,12 +721,16 @@ class ConfigScanner:
             return list(self.groups.values())
         self._scanned = True
         log.info("Scanner: iniciando scan em %s", self.config_dir)
+
+        minecraft_parent = self.config_dir.parent if self.config_dir.name == "config" else None
+
         root_files = 0
         for entry in sorted(self.config_dir.iterdir()):
             if entry.is_file():
                 self._process_file(entry)
                 root_files += 1
-        log.info("Scanner: %d arquivos na raiz", root_files)
+        log.info("Scanner: %d arquivos na raiz de %s", root_files, self.config_dir)
+
         subdirs = 0
         for entry in sorted(self.config_dir.iterdir()):
             if entry.is_dir() and not entry.name.startswith("."):
@@ -727,7 +739,27 @@ class ConfigScanner:
                     self.groups[mod_key] = ModGroup(mod_key)
                 self._scan_dir_recursive(entry, mod_key)
                 subdirs += 1
-        log.info("Scanner: %d subdiretorios processados", subdirs)
+        log.info("Scanner: %d subdiretorios processados em config/", subdirs)
+
+        # Also scan minecraft/ root and other dirs under minecraft/ for config files
+        if minecraft_parent is not None and minecraft_parent.is_dir():
+            log.info("Scanner: scan adicional em %s", minecraft_parent)
+            try:
+                for entry in sorted(minecraft_parent.iterdir()):
+                    if entry.name.startswith("."):
+                        continue
+                    if entry.is_file():
+                        self._process_file(entry)
+                        root_files += 1
+                    elif entry.is_dir() and entry.name.lower() not in self.SKIP_DIRS and entry.name != "config":
+                        mod_key = entry.name.lower()
+                        if mod_key not in self.groups:
+                            self.groups[mod_key] = ModGroup(mod_key)
+                        self._scan_dir_recursive(entry, mod_key)
+                        subdirs += 1
+            except PermissionError:
+                log.warning("Scanner: sem permissao para ler %s", minecraft_parent)
+
         total_files = sum(len(g.files) for g in self.groups.values())
         log.info("Scanner: %d mods, %d arquivos", len(self.groups), total_files)
         return sorted(self.groups.values(), key=lambda g: g.display_name.lower())
