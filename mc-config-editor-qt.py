@@ -45,7 +45,7 @@ else:
 
 # ── Logging ─────────────────────────────────────────────────────────────
 
-VERSION = "1.1.4"
+VERSION = "1.1.4_hml"
 GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
 GITHUB_RELEASES_URL = "https://github.com/Adiog0/mc-mod-config/releases"
 LOG_DIR = SCRIPT_DIR / "logs"
