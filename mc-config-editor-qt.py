@@ -16,18 +16,19 @@ import platform
 import re
 import shutil
 import sys
+import zipfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 # PyQt6
-from PyQt6.QtCore import Qt, QLocale, QSettings, QSize, QTimer, QTranslator, QUrl
+from PyQt6.QtCore import Qt, QLocale, QSettings, QSize, QTimer, QTranslator, QUrl, pyqtSignal
 from PyQt6.QtGui import QAction, QDesktopServices, QIcon, QPixmap
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 from PyQt6.QtWidgets import (
-    QApplication, QFileDialog, QFrame, QHBoxLayout,
+    QAbstractItemView, QApplication, QDialog, QFileDialog, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMenuBar,
     QMessageBox, QPushButton, QScrollArea, QSizePolicy,
-    QSplitter, QStatusBar, QTabWidget, QTextEdit, QTreeWidget,
+    QSplitter, QStackedWidget, QStatusBar, QTabWidget, QTextEdit, QTreeWidget,
     QTreeWidgetItem, QVBoxLayout, QWidget,
 )
 
@@ -44,7 +45,7 @@ else:
 
 # ── Logging ─────────────────────────────────────────────────────────────
 
-VERSION = "1.1.3"
+VERSION = "1.1.4_hml"
 GITHUB_RELEASES_API = "https://api.github.com/repos/Adiog0/mc-mod-config/releases/latest"
 GITHUB_RELEASES_URL = "https://github.com/Adiog0/mc-mod-config/releases"
 LOG_DIR = SCRIPT_DIR / "logs"
@@ -757,6 +758,101 @@ class ConfigScanner:
 # ── PyQt6 GUI ──────────────────────────────────────────────────────────
 
 
+class ModTreeWidget(QTreeWidget):
+    """QTreeWidget com suporte a drag-and-drop e menu de contexto (copiar/colar/excluir)."""
+
+    drop_requested = pyqtSignal(object, object)
+    delete_requested = pyqtSignal(object)
+    copy_requested = pyqtSignal(object)
+    paste_requested = pyqtSignal(object)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
+        self._drag_source_item = None
+        self.clipboard_file = None  # ConfigFile or None, set by MainWindow
+
+    def startDrag(self, supportedActions):
+        item = self.currentItem()
+        if item is not None:
+            self._drag_source_item = item
+        super().startDrag(supportedActions)
+
+    def dropEvent(self, event):
+        if self._drag_source_item is None:
+            event.ignore()
+            return
+        src_item = self._drag_source_item
+        self._drag_source_item = None
+
+        src_cf = src_item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(src_cf, ConfigFile):
+            event.ignore()
+            return
+
+        target_item = self.itemAt(event.position().toPoint())
+        if target_item is None:
+            event.ignore()
+            return
+
+        tgt_data = target_item.data(0, Qt.ItemDataRole.UserRole)
+        if tgt_data is None:
+            target_mod_item = target_item
+        elif isinstance(tgt_data, ConfigFile):
+            target_mod_item = target_item.parent()
+            if target_mod_item is None:
+                event.ignore()
+                return
+        else:
+            target_mod_item = target_item
+
+        src_mod_item = src_item.parent()
+        if src_mod_item is target_mod_item:
+            event.ignore()
+            return
+
+        self.drop_requested.emit(src_cf, target_mod_item)
+        event.accept()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Delete:
+            item = self.currentItem()
+            if item is not None:
+                data = item.data(0, Qt.ItemDataRole.UserRole)
+                if isinstance(data, ConfigFile) or isinstance(data, ModGroup):
+                    self.delete_requested.emit(item)
+                return
+        super().keyPressEvent(event)
+
+    def _show_context_menu(self, pos):
+        item = self.itemAt(pos)
+        if item is None:
+            return
+        data = item.data(0, Qt.ItemDataRole.UserRole)
+        menu = QMenu(self)
+
+        if isinstance(data, ConfigFile):
+            act_copy = menu.addAction(self.tr("Copiar"))
+            act_copy.triggered.connect(lambda: self.copy_requested.emit(item))
+            menu.addSeparator()
+            act_delete = menu.addAction(self.tr("Excluir"))
+            act_delete.triggered.connect(lambda: self.delete_requested.emit(item))
+        elif isinstance(data, ModGroup):
+            act_paste = menu.addAction(self.tr("Colar"))
+            act_paste.setEnabled(self.clipboard_file is not None)
+            act_paste.triggered.connect(lambda: self.paste_requested.emit(item))
+            menu.addSeparator()
+            act_delete = menu.addAction(self.tr("Excluir pasta"))
+            act_delete.triggered.connect(lambda: self.delete_requested.emit(item))
+
+        menu.exec(self.viewport().mapToGlobal(pos))
+
+
 class ToggleSwitch(QWidget):
     """Toggle switch customizado (substitui QCheckBox para booleanos)."""
     toggled = None  # type: ignore
@@ -1287,6 +1383,197 @@ class EditorPanel(QWidget):
             self._modified = False
 
 
+class TutorialDialog(QDialog):
+    """Dialogo de tutorial com navegacao por paginas."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("Tutorial — Minecraft Mod Config Editor"))
+        self.setMinimumSize(580, 420)
+        self.resize(600, 440)
+
+        layout = QVBoxLayout(self)
+
+        self.stack = QStackedWidget()
+        self._pages = self._build_pages()
+        for page in self._pages:
+            self.stack.addWidget(page)
+        layout.addWidget(self.stack)
+
+        nav_layout = QHBoxLayout()
+        nav_layout.setContentsMargins(0, 8, 0, 0)
+
+        self.btn_prev = QPushButton(self.tr("← Anterior"))
+        self.btn_prev.clicked.connect(self._prev_page)
+
+        self.page_label = QLabel()
+        self.page_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.page_label.setStyleSheet("font-weight: bold; font-size: 13px;")
+
+        self.btn_next = QPushButton(self.tr("Proximo →"))
+        self.btn_next.clicked.connect(self._next_page)
+
+        self.btn_close = QPushButton(self.tr("Fechar"))
+        self.btn_close.clicked.connect(self.close)
+
+        nav_layout.addWidget(self.btn_prev)
+        nav_layout.addWidget(self.page_label)
+        nav_layout.addWidget(self.btn_next)
+        nav_layout.addWidget(self.btn_close)
+        layout.addLayout(nav_layout)
+
+        self._update_nav()
+
+    def _build_pages(self):
+        pages = []
+        titles = [
+            self.tr("Bem-vindo ao MC Mod Config Editor"),
+            self.tr("Abrindo uma Instância"),
+            self.tr("Árvore de Mods"),
+            self.tr("Editor Visual"),
+            self.tr("Editor Raw"),
+            self.tr("Salvar, Desfazer e Backup"),
+            self.tr("Exportar e Importar"),
+            self.tr("Arrastar e Soltar (Drag & Drop)"),
+            self.tr("Copiar, Colar e Excluir"),
+            self.tr("Personalização CSS"),
+            self.tr("Idiomas e Atualizações"),
+        ]
+        bodies = [
+            self.tr("Este editor permite modificar arquivos de configuração "
+                     "dos mods do Minecraft de forma visual e intuitiva.\n\n"
+                     "Funciona com qualquer instância Minecraft:\n"
+                     "vanilla, Forge, Fabric, Neoforge, Quilt,\n"
+                     "PrismLauncher, ElyPrismLauncher e outros launchers.\n\n"
+                     "Multiplataforma: Windows, Linux e macOS.\n\n"
+                     "Formatos suportados: TOML, JSON, JSON5, YAML, CFG, Properties, SNBT, INI.\n\n"
+                     "Desenvolvido por Makalove — github.com/Adiog0/mc-mod-config"),
+
+            self.tr("Use o menu Arquivo → Abrir Instância para selecionar a\n"
+                     "pasta de qualquer instância Minecraft.\n\n"
+                     "O app detecta automaticamente o diretório de configs\n"
+                     "(minecraft/config ou config/).\n\n"
+                     "A última instância usada é salva e reaberta automaticamente\n"
+                     "na próxima execução do app."),
+
+            self.tr("O painel esquerdo mostra a árvore de mods encontrados.\n\n"
+                     "Cada mod (ícone de bloco) agrupa seus arquivos de config.\n"
+                     "O número ao lado indica quantos arquivos o mod possui.\n\n"
+                     "Use o campo de busca no topo para filtrar mods ou\n"
+                     "arquivos por nome parcial (ex: \"opt\" encontra \"OptiFine\").\n\n"
+                     "Clique em um arquivo para abri-lo no editor."),
+
+            self.tr("O editor Visual exibe cada parâmetro como um card individual.\n\n"
+                     "Tipos de campo:\n"
+                     "• Toggle Switch — para valores booleanos (ligado/desligado)\n"
+                     "• Campo de texto — para strings e números\n"
+                     "• Botões +/− — para ajuste fino de valores numéricos\n\n"
+                     "Seções recolhíveis mostram ▶/▼ e podem ser expandidas\n"
+                     "clicando no cabeçalho.\n\n"
+                     "Você pode adicionar ou remover parâmetros via os botões\n"
+                     "+ Adicionar e − Remover."),
+
+            self.tr("A aba Raw permite editar o arquivo diretamente em texto,\n"
+                     "mantendo a formatação original (TOML, JSON, YAML, etc).\n\n"
+                     "Útil para ajustes rápidos ou quando o formato não é\n"
+                     "totalmente suportado pelo editor visual.\n\n"
+                     "Alterações no Raw também acionam os botões Salvar/Desfazer."),
+
+            self.tr("Barra inferior de ações:\n\n"
+                     "• Salvar — Salva as alterações no arquivo (backup automático)\n"
+                     "• Desfazer — Descarta alterações e recarrega o arquivo original\n"
+                     "• Backup — Cria uma cópia de segurança com timestamp\n\n"
+                     "Sempre que você salva, um backup é criado automaticamente\n"
+                     "com a extensão .bak."),
+
+            self.tr("• Exportar — Salva o arquivo selecionado em uma pasta\n"
+                     "  de sua escolha (diálogo \"Salvar como\")\n\n"
+                     "• Importar — Abre um ou mais arquivos de config e os\n"
+                     "  copia para config/imports/ dentro da instância.\n"
+                     "  Use o campo de busca para encontrá-los.\n\n"
+                     "• Exportar ZIP — Cria um arquivo .zip com TODAS as\n"
+                     "  configurações da instância, salvo na pasta exports/\n"
+                     "  ao lado do executável. O popup permite abrir a pasta."),
+
+            self.tr("Arraste um arquivo de config de um mod para outro\n"
+                     "diretamente na árvore de mods.\n\n"
+                     "Ao soltar, você pode escolher entre:\n"
+                     "• Copiar — mantém o original e duplica no destino\n"
+                     "• Mover — transfere o arquivo para o novo mod\n\n"
+                     "Se o destino já tiver um arquivo com o mesmo nome:\n"
+                     "• Substituir — sobrescreve o existente\n"
+                     "• Renomear — adiciona (1), (2), etc. ao nome\n"
+                     "• Cancelar — cancela a operação"),
+
+            self.tr("Menu de contexto (botão direito) e atalhos de teclado:\n\n"
+                     "Clique com o botão direito em um arquivo:\n"
+                     "• Copiar — guarda o arquivo na área de transferência\n"
+                     "• Excluir — remove o arquivo permanentemente\n\n"
+                     "Clique com o botão direito em um mod (pasta):\n"
+                     "• Colar — cola o arquivo copiado da área de transferência\n"
+                     "• Excluir pasta — remove a pasta e todos os seus arquivos\n\n"
+                     "Tecla Delete — atalho rápido para excluir o item selecionado.\n\n"
+                     "A exclusão sempre pede confirmação com Sim/Não/Cancelar\n"
+                     "e avisa que a ação não pode ser desfeita."),
+
+            self.tr("Menu Visual → Carregar CSS Customizado:\n"
+                     "Carregue um arquivo .css para personalizar totalmente\n"
+                     "a aparência do app (cores, fontes, bordas, etc).\n\n"
+                     "Menu Visual → Resetar CSS Padrão:\n"
+                     "Restaura o tema original pastel Minecraft.\n\n"
+                     "Arquivos de tema inclusos:\n"
+                     "default.css, dracula.css, neon.css, high_contrast.css,\n"
+                     "mine.css, example.css (template comentado).\n\n"
+                     "Crie seu próprio style/custom.css — ele será\n"
+                     "carregado automaticamente ao iniciar."),
+
+            self.tr("Menu Idioma:\n"
+                     "Escolha entre Português (Brasil), English e Espanhol.\n\n"
+                     "Menu Ajuda:\n"
+                     "• Sobre — Informações do app e créditos\n"
+                     "• Tutorial — Este guia interativo\n\n"
+                     "Rodapé:\n"
+                     "O canto inferior direito mostra a versão atual do app.\n\n"
+                     "Verificação de atualização:\n"
+                     "Ao abrir uma instância, o app verifica se há\n"
+                     "uma nova versão disponível no GitHub."),
+        ]
+        for i, (title, body) in enumerate(zip(titles, bodies)):
+            page = QWidget()
+            page_layout = QVBoxLayout(page)
+            page_layout.setContentsMargins(16, 16, 16, 8)
+            title_lbl = QLabel(title)
+            title_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #7a9a6a; padding-bottom: 8px;")
+            title_lbl.setWordWrap(True)
+            page_layout.addWidget(title_lbl)
+            body_lbl = QLabel(body)
+            body_lbl.setWordWrap(True)
+            body_lbl.setStyleSheet("font-size: 13px; line-height: 1.4;")
+            page_layout.addWidget(body_lbl)
+            page_layout.addStretch()
+            pages.append(page)
+        return pages
+
+    def _prev_page(self):
+        idx = self.stack.currentIndex()
+        if idx > 0:
+            self.stack.setCurrentIndex(idx - 1)
+        self._update_nav()
+
+    def _next_page(self):
+        idx = self.stack.currentIndex()
+        if idx < self.stack.count() - 1:
+            self.stack.setCurrentIndex(idx + 1)
+        self._update_nav()
+
+    def _update_nav(self):
+        idx = self.stack.currentIndex()
+        total = self.stack.count()
+        self.page_label.setText(f"{idx + 1}/{total}")
+        self.btn_prev.setEnabled(idx > 0)
+        self.btn_next.setEnabled(idx < total - 1)
+
+
 class MainWindow(QMainWindow):
     """Janela principal do editor."""
 
@@ -1310,6 +1597,8 @@ class MainWindow(QMainWindow):
         self._groups: List[ModGroup] = []
         self._current_file: Optional[ConfigFile] = None
         self._instance_path: Optional[str] = None
+        self._instance_name: Optional[str] = None
+        self._clipboard_cf: Optional[ConfigFile] = None
         self._translator: Optional[QTranslator] = None
 
         self._build_menubar()
@@ -1387,6 +1676,10 @@ class MainWindow(QMainWindow):
         lang_menu.addAction(act_es)
 
         help_menu = menu.addMenu(self.tr("&Ajuda"))
+        act_tutorial = QAction(self.tr("Tutorial"), self)
+        act_tutorial.triggered.connect(self._show_tutorial)
+        help_menu.addAction(act_tutorial)
+        help_menu.addSeparator()
         act_about = QAction(self.tr("Sobre"), self)
         act_about.triggered.connect(self._show_about)
         help_menu.addAction(act_about)
@@ -1413,7 +1706,15 @@ class MainWindow(QMainWindow):
         tree_header_container.setObjectName("treeHeader")
         tree_layout.addWidget(tree_header_container)
 
-        self.tree = QTreeWidget()
+        # Search field
+        self.search_field = QLineEdit()
+        self.search_field.setObjectName("searchField")
+        self.search_field.setPlaceholderText(self.tr("🔍 Buscar mod ou arquivo de config..."))
+        self.search_field.setClearButtonEnabled(True)
+        self.search_field.textChanged.connect(self._on_search)
+        tree_layout.addWidget(self.search_field)
+
+        self.tree = ModTreeWidget()
         self.tree.setObjectName("modTree")
         self.tree.setHeaderLabels([self.tr("Nome"), self.tr("Tipo")])
         self.tree.header().setStretchLastSection(False)
@@ -1423,6 +1724,10 @@ class MainWindow(QMainWindow):
         self.tree.setIndentation(16)
         self.tree.itemClicked.connect(self._on_tree_clicked)
         self.tree.itemExpanded.connect(self._on_tree_expand)
+        self.tree.drop_requested.connect(self._on_config_dropped)
+        self.tree.delete_requested.connect(self._on_item_delete)
+        self.tree.copy_requested.connect(self._on_item_copy)
+        self.tree.paste_requested.connect(self._on_item_paste)
         tree_layout.addWidget(self.tree)
 
         splitter.addWidget(tree_container)
@@ -1463,6 +1768,29 @@ class MainWindow(QMainWindow):
         icon_button(self.btn_backup, "save")
         btn_layout.addWidget(self.btn_backup)
 
+        # ── Export / Import / ZIP ──
+        self.btn_export = QPushButton(self.tr(" Exportar"))
+        self.btn_export.setObjectName("btnExport")
+        self.btn_export.setEnabled(False)
+        self.btn_export.setToolTip(self.tr("Exporta o arquivo de config selecionado para uma pasta de sua escolha"))
+        self.btn_export.clicked.connect(self._export_config)
+        icon_button(self.btn_export, "file")
+        btn_layout.addWidget(self.btn_export)
+
+        self.btn_import = QPushButton(self.tr(" Importar"))
+        self.btn_import.setObjectName("btnImport")
+        self.btn_import.setToolTip(self.tr("Importa um arquivo de config para a instancia atual (pasta imports/)"))
+        self.btn_import.clicked.connect(self._import_config)
+        icon_button(self.btn_import, "folder")
+        btn_layout.addWidget(self.btn_import)
+
+        self.btn_export_zip = QPushButton(self.tr(" Exportar ZIP"))
+        self.btn_export_zip.setObjectName("btnExportZip")
+        self.btn_export_zip.setToolTip(self.tr("Exporta todas as configuracoes da instancia em um arquivo ZIP"))
+        self.btn_export_zip.clicked.connect(self._export_all_zip)
+        icon_button(self.btn_export_zip, "save")
+        btn_layout.addWidget(self.btn_export_zip)
+
         self.btn_cancel = QPushButton(self.tr(" Desfazer"))
         self.btn_cancel.setObjectName("btnCancelar")
         self.btn_cancel.setEnabled(False)
@@ -1490,6 +1818,9 @@ class MainWindow(QMainWindow):
         self.status.setObjectName("appStatusBar")
         self.setStatusBar(self.status)
         self.status.showMessage(icon_text("check") + " " + self.tr("Pronto. Selecione um arquivo para editar."))
+        version_label = QLabel(f"v{VERSION}")
+        version_label.setObjectName("versionLabel")
+        self.status.addPermanentWidget(version_label)
 
     # ── CSS ─────────────────────────────────────────────────────────
 
@@ -1619,6 +1950,7 @@ class MainWindow(QMainWindow):
             inst_name = config_dir.parent.parent.name
         else:
             inst_name = config_dir.parent.name
+        self._instance_name = inst_name
 
         # Limpa editor da instancia anterior
         self.editor._clear_widgets()
@@ -1648,6 +1980,7 @@ class MainWindow(QMainWindow):
         total = sum(len(g.files) for g in self._groups)
         self.setWindowTitle(self.tr("Minecraft Mod Config Editor \u2014 %1 \u2014 by Makalove").replace("%1", str(inst_name)))
         self.status.showMessage(icon_text("check") + " " + self.tr("%1 mods, %2 arquivos carregados").replace("%1", str(len(self._groups))).replace("%2", str(total)))
+        self._update_buttons()
 
         if save:
             set_last_instance(str(config_dir))
@@ -1672,7 +2005,7 @@ class MainWindow(QMainWindow):
             mod_item.setText(0, group.display_name)
             mod_item.setIcon(0, icon_mod)
             mod_item.setText(1, f"{len(group.files)}")
-            mod_item.setData(0, Qt.ItemDataRole.UserRole, None)
+            mod_item.setData(0, Qt.ItemDataRole.UserRole, group)
             mod_item.setToolTip(0, self.tr("%1 config files").replace("%1", str(len(group.files))))
 
             font = mod_item.font(0)
@@ -1690,6 +2023,27 @@ class MainWindow(QMainWindow):
 
         if self._groups and len(self._groups) <= 15:
             self.tree.expandAll()
+
+    def _on_search(self, text: str) -> None:
+        """Filter mod tree by mod name or config file name (case-insensitive substring)."""
+        search = text.strip().lower()
+        for i in range(self.tree.topLevelItemCount()):
+            group_item = self.tree.topLevelItem(i)
+            if group_item is None:
+                continue
+            group_name = group_item.text(0).lower()
+            group_match = search in group_name
+            any_child_visible = False
+            for j in range(group_item.childCount()):
+                child = group_item.child(j)
+                if child is None:
+                    continue
+                if search == "" or group_match or search in child.text(0).lower():
+                    child.setHidden(False)
+                    any_child_visible = True
+                else:
+                    child.setHidden(True)
+            group_item.setHidden(search != "" and not any_child_visible)
 
     def _on_tree_clicked(self, item: QTreeWidgetItem, _col: int) -> None:
         cf = item.data(0, Qt.ItemDataRole.UserRole)
@@ -1730,6 +2084,184 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         item.setFont(0, font)
 
+    def _on_config_dropped(self, src_cf: ConfigFile, target_mod_item: QTreeWidgetItem) -> None:
+        target_group = target_mod_item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(target_group, ModGroup):
+            return
+        config_dir = Path(self._instance_path)
+        target_dir = config_dir / target_group.key
+        target_dir.mkdir(parents=True, exist_ok=True)
+        src_group = None
+        for g in self._groups:
+            if src_cf in g.files:
+                src_group = g
+                break
+        # Protect unsaved changes in editor
+        if src_cf is self._current_file:
+            if not self._confirm_discard_unsaved():
+                return
+            self._current_file = None
+            self.editor._clear_widgets()
+            self.editor._tabs.setVisible(False)
+            self.editor._placeholder.setVisible(True)
+            self.editor_header.setVisible(False)
+            self._update_buttons()
+        action = self._ask_copy_or_move(src_cf.display_name, target_group.display_name)
+        if action is None:
+            return
+        dest_path = target_dir / src_cf.path.name
+        if dest_path.exists():
+            conflict_action = self._ask_file_conflict(dest_path.name)
+            if conflict_action is None:
+                return
+            if conflict_action == "rename":
+                dest_path = self._find_available_name(target_dir, Path(src_cf.path.stem), src_cf.path.suffix)
+        try:
+            if action == "move":
+                shutil.move(str(src_cf.path), str(dest_path))
+                src_cf.path = dest_path
+                if src_group is not None and src_cf in src_group.files:
+                    src_group.files.remove(src_cf)
+                if src_cf not in target_group.files:
+                    target_group.add_file(src_cf)
+                self._populate_tree()
+                self.status.showMessage(icon_text("check") + " " + self.tr("%1 movido para %2").replace("%1", src_cf.display_name).replace("%2", target_group.display_name))
+            else:
+                shutil.copy2(str(src_cf.path), str(dest_path))
+                new_cf = ConfigFile(dest_path, src_cf.fmt)
+                target_group.add_file(new_cf)
+                self._populate_tree()
+                self.status.showMessage(icon_text("check") + " " + self.tr("%1 copiado para %2").replace("%1", src_cf.display_name).replace("%2", target_group.display_name))
+        except OSError as e:
+            self.status.showMessage(icon_text("error") + " " + self.tr("Erro: %1").replace("%1", str(e)))
+
+    def _ask_copy_or_move(self, src_name: str, tgt_name: str) -> Optional[str]:
+        msg = QMessageBox(self)
+        msg.setWindowTitle(self.tr("Copiar ou Mover"))
+        msg.setText(self.tr("Deseja copiar ou mover \"%1\" para \"%2\"?").replace("%1", src_name).replace("%2", tgt_name))
+        msg.setIcon(QMessageBox.Icon.Question)
+        btn_copy = msg.addButton(self.tr("Copiar"), QMessageBox.ButtonRole.AcceptRole)
+        btn_move = msg.addButton(self.tr("Mover"), QMessageBox.ButtonRole.ActionRole)
+        btn_cancel = msg.addButton(self.tr("Cancelar"), QMessageBox.ButtonRole.RejectRole)
+        msg.setDefaultButton(btn_copy)
+        msg.exec()
+        clicked = msg.clickedButton()
+        if clicked == btn_copy:
+            return "copy"
+        if clicked == btn_move:
+            return "move"
+        return None
+
+    def _ask_file_conflict(self, filename: str) -> Optional[str]:
+        msg = QMessageBox(self)
+        msg.setWindowTitle(self.tr("Arquivo ja existe"))
+        msg.setText(self.tr("\"%1\" ja existe no destino. O que deseja fazer?").replace("%1", filename))
+        msg.setIcon(QMessageBox.Icon.Warning)
+        btn_replace = msg.addButton(self.tr("Substituir"), QMessageBox.ButtonRole.AcceptRole)
+        btn_rename = msg.addButton(self.tr("Renomear"), QMessageBox.ButtonRole.ActionRole)
+        btn_cancel = msg.addButton(self.tr("Cancelar"), QMessageBox.ButtonRole.RejectRole)
+        msg.setDefaultButton(btn_rename)
+        msg.exec()
+        clicked = msg.clickedButton()
+        if clicked == btn_replace:
+            return "replace"
+        if clicked == btn_rename:
+            return "rename"
+        return None
+
+    def _find_available_name(self, directory: Path, stem: str, suffix: str) -> Path:
+        counter = 1
+        while True:
+            candidate = directory / f"{stem} ({counter}){suffix}"
+            if not candidate.exists():
+                return candidate
+            counter += 1
+
+    def _on_item_delete(self, item: QTreeWidgetItem) -> None:
+        data = item.data(0, Qt.ItemDataRole.UserRole)
+        if isinstance(data, ConfigFile):
+            self._delete_file(data)
+        elif isinstance(data, ModGroup):
+            self._delete_folder(data)
+
+    def _delete_file(self, cf: ConfigFile) -> None:
+        msg = QMessageBox(self)
+        msg.setWindowTitle(self.tr("Confirmar exclusao"))
+        msg.setText(self.tr("Tem certeza que deseja excluir \"%1\"?\n\nEsta acao nao pode ser desfeita.").replace("%1", cf.display_name))
+        msg.setIcon(QMessageBox.Icon.Warning)
+        btn_yes = msg.addButton(self.tr("Sim"), QMessageBox.ButtonRole.YesRole)
+        btn_no = msg.addButton(self.tr("Nao"), QMessageBox.ButtonRole.NoRole)
+        btn_cancel = msg.addButton(self.tr("Cancelar"), QMessageBox.ButtonRole.RejectRole)
+        msg.setDefaultButton(btn_cancel)
+        msg.exec()
+        if msg.clickedButton() != btn_yes:
+            return
+        if cf is self._current_file:
+            self._current_file = None
+            self.editor._clear_widgets()
+            self.editor._tabs.setVisible(False)
+            self.editor._placeholder.setVisible(True)
+            self.editor_header.setVisible(False)
+            self._update_buttons()
+        try:
+            cf.path.unlink(missing_ok=True)
+        except OSError as e:
+            self.status.showMessage(icon_text("error") + " " + self.tr("Erro ao excluir: %1").replace("%1", str(e)))
+            return
+        for g in self._groups:
+            if cf in g.files:
+                g.files.remove(cf)
+                break
+        self._populate_tree()
+        self.status.showMessage(icon_text("check") + " " + self.tr("\"%1\" excluido").replace("%1", cf.display_name))
+
+    def _delete_folder(self, group: ModGroup) -> None:
+        msg = QMessageBox(self)
+        msg.setWindowTitle(self.tr("Confirmar exclusao"))
+        msg.setText(self.tr("Tem certeza que deseja excluir a pasta \"%1\"\ncom %2 arquivo(s)?\n\nEsta acao nao pode ser desfeita.").replace("%1", group.display_name).replace("%2", str(len(group.files))))
+        msg.setIcon(QMessageBox.Icon.Warning)
+        btn_yes = msg.addButton(self.tr("Sim"), QMessageBox.ButtonRole.YesRole)
+        btn_no = msg.addButton(self.tr("Nao"), QMessageBox.ButtonRole.NoRole)
+        btn_cancel = msg.addButton(self.tr("Cancelar"), QMessageBox.ButtonRole.RejectRole)
+        msg.setDefaultButton(btn_cancel)
+        msg.exec()
+        if msg.clickedButton() != btn_yes:
+            return
+        config_dir = Path(self._instance_path)
+        target_dir = config_dir / group.key
+        if self._current_file and self._current_file in group.files:
+            self._current_file = None
+            self.editor._clear_widgets()
+            self.editor._tabs.setVisible(False)
+            self.editor._placeholder.setVisible(True)
+            self.editor_header.setVisible(False)
+            self._update_buttons()
+        try:
+            if target_dir.is_dir():
+                shutil.rmtree(target_dir)
+        except OSError as e:
+            self.status.showMessage(icon_text("error") + " " + self.tr("Erro ao excluir: %1").replace("%1", str(e)))
+            return
+        self._groups = [g for g in self._groups if g is not group]
+        self._populate_tree()
+        self.status.showMessage(icon_text("check") + " " + self.tr("\"%1\" excluida").replace("%1", group.display_name))
+
+    def _on_item_copy(self, item: QTreeWidgetItem) -> None:
+        cf = item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(cf, ConfigFile):
+            return
+        self._clipboard_cf = cf
+        self.tree.clipboard_file = cf
+        self.status.showMessage(icon_text("check") + " " + self.tr("\"%1\" copiado. Clique com botao direito no mod de destino e escolha Colar.").replace("%1", cf.display_name))
+
+    def _on_item_paste(self, item: QTreeWidgetItem) -> None:
+        if self._clipboard_cf is None:
+            return
+        target_group = item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(target_group, ModGroup):
+            return
+        self._on_config_dropped(self._clipboard_cf, item)
+
     def _load_file_into_editor(self, cf: ConfigFile) -> None:
         log.info("Editor: carregando %s (%s)", cf.path.name, cf.fmt)
         self.editor_header.setText(icon_text("file") + cf.display_name)
@@ -1741,9 +2273,13 @@ class MainWindow(QMainWindow):
     def _update_buttons(self) -> None:
         cf = self._current_file
         has_file = cf is not None and cf.parsed_ok
+        has_instance = self._instance_path is not None
         self.btn_backup.setEnabled(has_file)
         self.btn_save.setEnabled(has_file and cf.modified if cf else False)
         self.btn_cancel.setEnabled(has_file and cf.modified if cf else False)
+        self.btn_export.setEnabled(has_file)
+        self.btn_import.setEnabled(has_instance)
+        self.btn_export_zip.setEnabled(has_instance)
 
     # ── Actions ───────────────────────────────────────────────────────
 
@@ -1755,6 +2291,87 @@ class MainWindow(QMainWindow):
             self.status.showMessage(icon_text("check") + " " + self.tr("Backup salvo em: %1").replace("%1", str(bak)))
         else:
             self.status.showMessage(icon_text("error") + " " + self.tr("Erro ao criar backup."))
+
+    def _export_config(self) -> None:
+        cf = self._current_file
+        if not cf or not cf.path.exists():
+            return
+        dest, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Exportar arquivo de configuracao"),
+            str(cf.path.name),
+            "Config Files (*.toml *.json *.json5 *.yaml *.yml *.cfg *.properties *.txt *.snbt *.ini);;All Files (*)",
+            options=QFileDialog.Option.DontUseNativeDialog,
+        )
+        if dest:
+            try:
+                shutil.copy2(cf.path, dest)
+                self.status.showMessage(icon_text("check") + " " + self.tr("Arquivo exportado: %1").replace("%1", Path(dest).name))
+            except OSError as e:
+                self.status.showMessage(icon_text("error") + " " + self.tr("Erro ao exportar: %1").replace("%1", str(e)))
+
+    def _import_config(self) -> None:
+        if not self._instance_path:
+            return
+        files, _ = QFileDialog.getOpenFileNames(
+            self,
+            self.tr("Importar arquivo(s) de configuracao"),
+            "",
+            "Config Files (*.toml *.json *.json5 *.yaml *.yml *.cfg *.properties *.txt *.snbt *.ini);;All Files (*)",
+            options=QFileDialog.Option.DontUseNativeDialog,
+        )
+        if not files:
+            return
+        imports_dir = Path(self._instance_path) / "imports"
+        imports_dir.mkdir(exist_ok=True)
+        imported = 0
+        for src in files:
+            src_path = Path(src)
+            dest = imports_dir / src_path.name
+            try:
+                shutil.copy2(src_path, dest)
+                imported += 1
+            except OSError as e:
+                log.warning("Import: erro ao copiar %s: %s", src, e)
+        if imported:
+            self._reload_all()
+            QMessageBox.information(
+                self,
+                self.tr("Importacao concluida"),
+                self.tr("%1 arquivo(s) importado(s) para:\n%2\n\nUse o campo de busca \U0001f50d para encontra-lo(s).").replace("%1", str(imported)).replace("%2", str(imports_dir)),
+            )
+        else:
+            self.status.showMessage(icon_text("error") + " " + self.tr("Nenhum arquivo importado. Verifique as permissoes."))
+
+    def _export_all_zip(self) -> None:
+        if not self._instance_path or not self._instance_name:
+            return
+        config_dir = Path(self._instance_path)
+        if not config_dir.is_dir():
+            return
+        exports_dir = SCRIPT_DIR / "exports"
+        exports_dir.mkdir(exist_ok=True)
+        date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+        safe_name = re.sub(r'[\\/*?:"<>|]', "_", self._instance_name)
+        zip_path = exports_dir / f"{safe_name}_{date_str}.zip"
+        try:
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                for file_path in config_dir.rglob("*"):
+                    if file_path.is_file():
+                        arcname = file_path.relative_to(config_dir)
+                        zf.write(file_path, arcname)
+            export_msg = QMessageBox(self)
+            export_msg.setWindowTitle(self.tr("Exportacao ZIP concluida"))
+            export_msg.setText(self.tr("ZIP exportado com sucesso:\n%1").replace("%1", str(zip_path)))
+            export_msg.setIcon(QMessageBox.Icon.Information)
+            btn_ok = export_msg.addButton(self.tr("OK"), QMessageBox.ButtonRole.AcceptRole)
+            btn_open = export_msg.addButton(self.tr("Abrir pasta"), QMessageBox.ButtonRole.ActionRole)
+            export_msg.setDefaultButton(btn_ok)
+            export_msg.exec()
+            if export_msg.clickedButton() == btn_open:
+                QDesktopServices.openUrl(QUrl.fromLocalFile(str(exports_dir)))
+        except OSError as e:
+            self.status.showMessage(icon_text("error") + " " + self.tr("Erro ao criar ZIP: %1").replace("%1", str(e)))
 
     def _cancel_changes(self) -> None:
         if not self._current_file or not self._current_file.modified:
@@ -1777,6 +2394,10 @@ class MainWindow(QMainWindow):
             self.editor._modified = False
         else:
             self.status.showMessage(icon_text("error") + " " + msg)
+
+    def _show_tutorial(self) -> None:
+        dlg = TutorialDialog(self)
+        dlg.exec()
 
     def _show_about(self) -> None:
         QMessageBox.about(
