@@ -13,12 +13,29 @@ Output:
 
 import os
 import sys
+import subprocess
 
 block_cipher = None
 
 # Resolve project root (parent of this build/ directory)
 _BUILD_DIR = os.path.abspath(SPECPATH)
 _PROJECT_ROOT = os.path.dirname(_BUILD_DIR)
+
+# ── Auto-detect version suffix from git branch ──────────────────────────
+_version_suffix = ""
+try:
+    _branch = subprocess.check_output(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=_PROJECT_ROOT, text=True
+    ).strip()
+    if _branch == "hml":
+        _version_suffix = "_hml"
+except Exception:
+    pass
+
+_suffix_file = os.path.join(_BUILD_DIR, "version_suffix.txt")
+with open(_suffix_file, "w", encoding="utf-8") as _f:
+    _f.write(_version_suffix)
 
 # ── Determine icon per platform ────────────────────────────────────────
 _icon_path = None
@@ -35,6 +52,7 @@ a = Analysis(
         (os.path.join(_PROJECT_ROOT, "icons"), "icons"),
         (os.path.join(_PROJECT_ROOT, "style"), "style"),
         (os.path.join(_PROJECT_ROOT, "i18n"), "i18n"),
+        (_suffix_file, "."),
     ],
     hiddenimports=[
         "tomlkit",
