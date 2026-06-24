@@ -46,7 +46,7 @@ else:
 
 # ── Version (suffix auto-detected from build-time git branch) ──────────
 
-VERSION = "1.1.5"
+VERSION = "1.1.6"
 try:
     if _MEIPASS_DIR is not None:
         _suffix_path = _MEIPASS_DIR / "version_suffix.txt"
@@ -312,11 +312,6 @@ def extract_mod_key(filename: str) -> str:
     return stem
 
 
-def mod_key_to_display(key: str) -> str:
-    name = re.sub(r"[_-]", " ", key)
-    return name.strip().title() or key
-
-
 def format_timestamp() -> str:
     return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -338,6 +333,7 @@ class ConfigFile:
     def __init__(self, path: Path, fmt: str) -> None:
         self.path = path
         self.fmt = fmt
+        self.mod_tag = extract_mod_key(path.name)
         self.parsed_data: Any = None
         self.parsed_ok = False
         self.parse_error: Optional[str] = None
@@ -703,11 +699,17 @@ class ConfigFile:
         self.modified = True
 
 
-class ModGroup:
-    def __init__(self, key: str) -> None:
-        self.key = key
-        self.display_name = mod_key_to_display(key)
+class DirNode:
+    def __init__(self, name: str, path: Path) -> None:
+        self.name = name
+        self.path = path
+        self.key = name.lower()
         self.files: List[ConfigFile] = []
+        self.subdirs: List[DirNode] = []
+
+    @property
+    def display_name(self) -> str:
+        return self.name or "📁 Config"
 
     def add_file(self, cf: ConfigFile) -> None:
         self.files.append(cf)
@@ -731,35 +733,34 @@ class ConfigScanner:
 
     def __init__(self, config_dir: Path) -> None:
         self.config_dir = config_dir.resolve()
-        self.groups: Dict[str, ModGroup] = {}
+        self.root_nodes: Dict[str, DirNode] = {}
         self._scanned = False
 
-    def scan(self) -> List[ModGroup]:
+    def scan(self) -> List[DirNode]:
         if self._scanned:
-            return list(self.groups.values())
+            return list(self.root_nodes.values())
         self._scanned = True
         log.info("Scanner: iniciando scan em %s", self.config_dir)
 
         minecraft_parent = self.config_dir.parent if self.config_dir.name == "config" else None
 
-        root_files = 0
-        for entry in sorted(self.config_dir.iterdir()):
-            if entry.is_file():
-                self._process_file(entry)
-                root_files += 1
-        log.info("Scanner: %d arquivos na raiz de %s", root_files, self.config_dir)
-
+        root_node = self._ensure_dir("", self.config_dir)
+        total_files = 0
         subdirs = 0
-        for entry in sorted(self.config_dir.iterdir()):
-            if entry.is_dir() and not entry.name.startswith("."):
-                mod_key = entry.name.lower()
-                if mod_key not in self.groups:
-                    self.groups[mod_key] = ModGroup(mod_key)
-                self._scan_dir_recursive(entry, mod_key)
-                subdirs += 1
-        log.info("Scanner: %d subdiretorios processados em config/", subdirs)
 
-        # Also scan minecraft/ root and other dirs under minecraft/ for config files
+        for entry in sorted(self.config_dir.iterdir()):
+            if entry.name.startswith("."):
+                continue
+            if entry.is_file():
+                self._process_file(entry, root_node)
+                total_files += 1
+            elif entry.is_dir():
+                dir_node = self._ensure_dir(entry.name, entry)
+                self._scan_dir(entry, dir_node)
+                subdirs += 1
+
+        log.info("Scanner: %d arquivos na raiz, %d subdiretorios em config/", len(root_node.files), subdirs)
+
         if minecraft_parent is not None and minecraft_parent.is_dir():
             log.info("Scanner: scan adicional em %s", minecraft_parent)
             try:
@@ -767,31 +768,35 @@ class ConfigScanner:
                     if entry.name.startswith("."):
                         continue
                     if entry.is_file():
-                        self._process_file(entry)
-                        root_files += 1
+                        self._process_file(entry, root_node)
+                        total_files += 1
                     elif entry.is_dir() and entry.name.lower() not in self.SKIP_DIRS and entry.name != "config":
-                        mod_key = entry.name.lower()
-                        if mod_key not in self.groups:
-                            self.groups[mod_key] = ModGroup(mod_key)
-                        self._scan_dir_recursive(entry, mod_key)
+                        dir_node = self._ensure_dir(entry.name, entry)
+                        self._scan_dir(entry, dir_node)
                         subdirs += 1
             except PermissionError:
                 log.warning("Scanner: sem permissao para ler %s", minecraft_parent)
 
-        total_files = sum(len(g.files) for g in self.groups.values())
-        log.info("Scanner: %d mods, %d arquivos", len(self.groups), total_files)
-        return sorted(self.groups.values(), key=lambda g: g.display_name.lower())
+        total = sum(len(n.files) for n in self.root_nodes.values())
+        log.info("Scanner: %d diretorios, %d arquivos", len(self.root_nodes), total)
+        return sorted(self.root_nodes.values(), key=lambda n: n.display_name.lower())
 
-    def _scan_dir_recursive(self, directory: Path, mod_key: str) -> None:
+    def _ensure_dir(self, name: str, path: Path) -> DirNode:
+        key = name.lower()
+        if key not in self.root_nodes:
+            self.root_nodes[key] = DirNode(name, path)
+        return self.root_nodes[key]
+
+    def _scan_dir(self, directory: Path, node: DirNode) -> None:
         for entry in sorted(directory.iterdir()):
             if entry.name.startswith("."):
                 continue
             if entry.is_file():
-                self._process_file(entry, parent_mod=mod_key)
+                self._process_file(entry, node)
             elif entry.is_dir():
-                self._scan_dir_recursive(entry, mod_key)
+                self._scan_dir(entry, node)
 
-    def _process_file(self, path: Path, parent_mod: Optional[str] = None) -> None:
+    def _process_file(self, path: Path, node: DirNode) -> None:
         if path.name.startswith("."):
             return
         if path.suffix == ".bak" or ".bak." in path.name or path.suffix in (".backup",):
@@ -799,10 +804,7 @@ class ConfigScanner:
         if path.suffix not in self.FORMAT_MAP:
             return
         fmt = self.FORMAT_MAP[path.suffix]
-        mod_key = parent_mod or extract_mod_key(path.name)
-        if mod_key not in self.groups:
-            self.groups[mod_key] = ModGroup(mod_key)
-        self.groups[mod_key].add_file(ConfigFile(path, fmt))
+        node.add_file(ConfigFile(path, fmt))
 
 
 # ── PyQt6 GUI ──────────────────────────────────────────────────────────
@@ -874,7 +876,7 @@ class ModTreeWidget(QTreeWidget):
             item = self.currentItem()
             if item is not None:
                 data = item.data(0, Qt.ItemDataRole.UserRole)
-                if isinstance(data, ConfigFile) or isinstance(data, ModGroup):
+                if isinstance(data, ConfigFile) or isinstance(data, DirNode):
                     self.delete_requested.emit(item)
                 return
         super().keyPressEvent(event)
@@ -892,7 +894,7 @@ class ModTreeWidget(QTreeWidget):
             menu.addSeparator()
             act_delete = menu.addAction(self.tr("Excluir"))
             act_delete.triggered.connect(lambda: self.delete_requested.emit(item))
-        elif isinstance(data, ModGroup):
+        elif isinstance(data, DirNode):
             act_paste = menu.addAction(self.tr("Colar"))
             act_paste.setEnabled(self.clipboard_file is not None)
             act_paste.triggered.connect(lambda: self.paste_requested.emit(item))
@@ -1506,11 +1508,14 @@ class TutorialDialog(QDialog):
                      "A última instância usada é salva e reaberta automaticamente\n"
                      "na próxima execução do app."),
 
-            self.tr("O painel esquerdo mostra a árvore de mods encontrados.\n\n"
-                     "Cada mod (ícone de bloco) agrupa seus arquivos de config.\n"
-                     "O número ao lado indica quantos arquivos o mod possui.\n\n"
-                     "Use o campo de busca no topo para filtrar mods ou\n"
-                     "arquivos por nome parcial (ex: \"opt\" encontra \"OptiFine\").\n\n"
+            self.tr("O painel esquerdo mostra a árvore de diretórios e arquivos\n"
+                     "exatamente como estão no sistema de arquivos.\n\n"
+                     "Arquivos soltos na raiz do config aparecem no topo.\n"
+                     "Pastas (ícone de diretório) agrupam os arquivos dentro delas.\n\n"
+                     "A coluna \"Mod\" mostra a tag [NomDoMod] de cada arquivo,\n"
+                     "identificando a qual mod ele pertence.\n\n"
+                     "Use o campo de busca no topo para filtrar por nome\n"
+                     "de arquivo ou tag de mod (ex: \"opt\" encontra \"OptiFine\").\n\n"
                      "Clique em um arquivo para abri-lo no editor."),
 
             self.tr("O editor Visual exibe cada parâmetro como um card individual.\n\n"
@@ -1644,7 +1649,7 @@ class MainWindow(QMainWindow):
             except Exception:
                 pass
 
-        self._groups: List[ModGroup] = []
+        self._groups: List[DirNode] = []
         self._current_file: Optional[ConfigFile] = None
         self._instance_path: Optional[str] = None
         self._instance_name: Optional[str] = None
@@ -1766,7 +1771,7 @@ class MainWindow(QMainWindow):
 
         self.tree = ModTreeWidget()
         self.tree.setObjectName("modTree")
-        self.tree.setHeaderLabels([self.tr("Nome"), self.tr("Tipo")])
+        self.tree.setHeaderLabels([self.tr("Nome"), self.tr("Mod")])
         self.tree.header().setStretchLastSection(False)
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
@@ -2051,51 +2056,65 @@ class MainWindow(QMainWindow):
 
     def _populate_tree(self) -> None:
         self.tree.clear()
-        icon_mod = load_icon("block")
-        for group in self._groups:
-            mod_item = QTreeWidgetItem(self.tree)
-            mod_item.setText(0, group.display_name)
-            mod_item.setIcon(0, icon_mod)
-            mod_item.setText(1, f"{len(group.files)}")
-            mod_item.setData(0, Qt.ItemDataRole.UserRole, group)
-            mod_item.setToolTip(0, self.tr("%1 config files").replace("%1", str(len(group.files))))
-
-            font = mod_item.font(0)
-            font.setBold(True)
-            mod_item.setFont(0, font)
-
-            for cf in group.files:
-                file_item = QTreeWidgetItem(mod_item)
-                file_item.setText(0, cf.display_name)
-                file_item.setText(1, cf.fmt.upper())
-                file_item.setData(0, Qt.ItemDataRole.UserRole, cf)
-                fmt_icon = _file_format_icon(cf.fmt)
-                if not fmt_icon.isNull():
-                    file_item.setIcon(0, fmt_icon)
+        icon_folder = load_icon("folder")
+        for node in self._groups:
+            if node.name == "":
+                for cf in sorted(node.files, key=lambda f: f.display_name.lower()):
+                    file_item = QTreeWidgetItem(self.tree)
+                    file_item.setText(0, cf.display_name)
+                    file_item.setText(1, f"[{cf.mod_tag}]")
+                    file_item.setData(0, Qt.ItemDataRole.UserRole, cf)
+                    fmt_icon = _file_format_icon(cf.fmt)
+                    if not fmt_icon.isNull():
+                        file_item.setIcon(0, fmt_icon)
+            else:
+                dir_item = QTreeWidgetItem(self.tree)
+                dir_item.setText(0, node.display_name)
+                dir_item.setIcon(0, icon_folder)
+                dir_item.setText(1, f"{len(node.files)} arquivos")
+                dir_item.setData(0, Qt.ItemDataRole.UserRole, node)
+                font = dir_item.font(0)
+                font.setBold(True)
+                dir_item.setFont(0, font)
+                for cf in sorted(node.files, key=lambda f: f.display_name.lower()):
+                    file_item = QTreeWidgetItem(dir_item)
+                    file_item.setText(0, cf.display_name)
+                    file_item.setText(1, f"[{cf.mod_tag}]")
+                    file_item.setData(0, Qt.ItemDataRole.UserRole, cf)
+                    fmt_icon = _file_format_icon(cf.fmt)
+                    if not fmt_icon.isNull():
+                        file_item.setIcon(0, fmt_icon)
 
         if self._groups and len(self._groups) <= 15:
             self.tree.expandAll()
 
     def _on_search(self, text: str) -> None:
-        """Filter mod tree by mod name or config file name (case-insensitive substring)."""
         search = text.strip().lower()
         for i in range(self.tree.topLevelItemCount()):
-            group_item = self.tree.topLevelItem(i)
-            if group_item is None:
+            item = self.tree.topLevelItem(i)
+            if item is None:
                 continue
-            group_name = group_item.text(0).lower()
-            group_match = search in group_name
-            any_child_visible = False
-            for j in range(group_item.childCount()):
-                child = group_item.child(j)
-                if child is None:
-                    continue
-                if search == "" or group_match or search in child.text(0).lower():
-                    child.setHidden(False)
-                    any_child_visible = True
-                else:
-                    child.setHidden(True)
-            group_item.setHidden(search != "" and not any_child_visible)
+            data = item.data(0, Qt.ItemDataRole.UserRole)
+            if isinstance(data, ConfigFile):
+                name_match = search in item.text(0).lower()
+                tag_match = search in item.text(1).lower()
+                item.setHidden(search != "" and not name_match and not tag_match)
+            elif isinstance(data, DirNode):
+                group_name = item.text(0).lower()
+                group_match = search in group_name
+                any_child_visible = False
+                for j in range(item.childCount()):
+                    child = item.child(j)
+                    if child is None:
+                        continue
+                    child_name = child.text(0).lower()
+                    child_tag = child.text(1).lower()
+                    if search == "" or group_match or search in child_name or search in child_tag:
+                        child.setHidden(False)
+                        any_child_visible = True
+                    else:
+                        child.setHidden(True)
+                item.setHidden(search != "" and not any_child_visible)
 
     def _on_tree_clicked(self, item: QTreeWidgetItem, _col: int) -> None:
         cf = item.data(0, Qt.ItemDataRole.UserRole)
@@ -2138,10 +2157,9 @@ class MainWindow(QMainWindow):
 
     def _on_config_dropped(self, src_cf: ConfigFile, target_mod_item: QTreeWidgetItem) -> None:
         target_group = target_mod_item.data(0, Qt.ItemDataRole.UserRole)
-        if not isinstance(target_group, ModGroup):
+        if not isinstance(target_group, DirNode):
             return
-        config_dir = Path(self._instance_path)
-        target_dir = config_dir / target_group.key
+        target_dir = target_group.path
         target_dir.mkdir(parents=True, exist_ok=True)
         src_group = None
         for g in self._groups:
@@ -2233,7 +2251,7 @@ class MainWindow(QMainWindow):
         data = item.data(0, Qt.ItemDataRole.UserRole)
         if isinstance(data, ConfigFile):
             self._delete_file(data)
-        elif isinstance(data, ModGroup):
+        elif isinstance(data, DirNode):
             self._delete_folder(data)
 
     def _delete_file(self, cf: ConfigFile) -> None:
@@ -2267,7 +2285,7 @@ class MainWindow(QMainWindow):
         self._populate_tree()
         self.status.showMessage(icon_text("check") + " " + self.tr("\"%1\" excluido").replace("%1", cf.display_name))
 
-    def _delete_folder(self, group: ModGroup) -> None:
+    def _delete_folder(self, group: DirNode) -> None:
         msg = QMessageBox(self)
         msg.setWindowTitle(self.tr("Confirmar exclusao"))
         msg.setText(self.tr("Tem certeza que deseja excluir a pasta \"%1\"\ncom %2 arquivo(s)?\n\nEsta acao nao pode ser desfeita.").replace("%1", group.display_name).replace("%2", str(len(group.files))))
@@ -2279,8 +2297,7 @@ class MainWindow(QMainWindow):
         msg.exec()
         if msg.clickedButton() != btn_yes:
             return
-        config_dir = Path(self._instance_path)
-        target_dir = config_dir / group.key
+        target_dir = group.path
         if self._current_file and self._current_file in group.files:
             self._current_file = None
             self.editor._clear_widgets()
@@ -2310,7 +2327,7 @@ class MainWindow(QMainWindow):
         if self._clipboard_cf is None:
             return
         target_group = item.data(0, Qt.ItemDataRole.UserRole)
-        if not isinstance(target_group, ModGroup):
+        if not isinstance(target_group, DirNode):
             return
         self._on_config_dropped(self._clipboard_cf, item)
 
