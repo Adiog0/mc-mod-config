@@ -5,6 +5,9 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   # ═══════════════════════════════════════════════════════════════════════
   # Linux
@@ -112,9 +115,9 @@ jobs:
           cp artifacts/mc-config-editor-linux/mc-config-editor dist/mc-config-editor-linux
           cp artifacts/mc-config-editor-windows/mc-config-editor.exe dist/mc-config-editor-windows.exe
           cp artifacts/mc-config-editor-macos/mc-config-editor dist/mc-config-editor-macos
-          cd artifacts/mc-config-editor-linux && tar -czf ../../dist/mc-config-editor-linux.tar.gz mc-config-editor
-          cd ../../artifacts/mc-config-editor-macos && tar -czf ../../dist/mc-config-editor-macos.tar.gz mc-config-editor
-          cd ../../artifacts/mc-config-editor-windows && zip ../../dist/mc-config-editor-windows.zip mc-config-editor.exe
+          tar -czf dist/mc-config-editor-linux.tar.gz -C artifacts/mc-config-editor-linux mc-config-editor
+          tar -czf dist/mc-config-editor-macos.tar.gz -C artifacts/mc-config-editor-macos mc-config-editor
+          tar -czf dist/mc-config-editor-windows.tar.gz -C artifacts/mc-config-editor-windows mc-config-editor.exe
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2
@@ -123,6 +126,6 @@ jobs:
             dist/mc-config-editor-linux
             dist/mc-config-editor-linux.tar.gz
             dist/mc-config-editor-windows.exe
-            dist/mc-config-editor-windows.zip
+            dist/mc-config-editor-windows.tar.gz
             dist/mc-config-editor-macos
             dist/mc-config-editor-macos.tar.gz
