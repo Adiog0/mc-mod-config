@@ -120,12 +120,19 @@ jobs:
           tar -czf dist/mc-config-editor-windows.tar.gz -C artifacts/mc-config-editor-windows mc-config-editor.exe
 
       - name: Upload to release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/mc-config-editor-linux
-            dist/mc-config-editor-linux.tar.gz
-            dist/mc-config-editor-windows.exe
-            dist/mc-config-editor-windows.tar.gz
-            dist/mc-config-editor-macos
-            dist/mc-config-editor-macos.tar.gz
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release list --repo ${{ github.repository }} --limit 1 --json tagName --jq '.[0].tagName')
+          fi
+          echo "Uploading to $TAG"
+          gh release upload "$TAG" \
+            dist/mc-config-editor-linux \
+            dist/mc-config-editor-linux.tar.gz \
+            dist/mc-config-editor-windows.exe \
+            dist/mc-config-editor-windows.tar.gz \
+            dist/mc-config-editor-macos \
+            dist/mc-config-editor-macos.tar.gz \
+            --clobber
